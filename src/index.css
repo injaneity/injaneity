@@ -122,7 +122,7 @@ textarea.typography-h3 {
   font-weight: 600 !important;
   line-height: 1.2 !important;
   letter-spacing: -0.025em !important;
-  font-family: 'Sohne Medium', system-ui, sans-serif !important;
+  font-family: 'Sohne Bold', system-ui, sans-serif !important;
   text-align: left !important;
   margin: 0 !important;
   padding: 24px 8px 0px 8px !important; /* top: 24px, sides: 8px, bottom: 0px to prevent extra space */
@@ -136,7 +136,7 @@ p.typography-body {
   font-weight: 400 !important;
   line-height: 1.6 !important;
   font-family: 'Source Serif Pro', Georgia, Cambria, 'Times New Roman', Times, serif !important;
-  text-align: justify !important;
+  text-align: left !important;
   margin: 0 !important;
   padding: 12px 8px 12px 8px !important; /* top: 12px, sides: 8px, bottom: 12px */
 }
@@ -196,11 +196,11 @@ textarea.typography-caption {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  --background: #F9F6EE;
   --foreground: oklch(0.147 0.004 49.25);
-  --card: oklch(1 0 0);
+  --card: #F9F6EE;
   --card-foreground: oklch(0.147 0.004 49.25);
-  --popover: oklch(1 0 0);
+  --popover: #F9F6EE;
   --popover-foreground: oklch(0.147 0.004 49.25);
   --primary: oklch(0.216 0.006 56.043);
   --primary-foreground: oklch(0.985 0.001 106.423);
@@ -271,13 +271,13 @@ button:focus-visible {
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
-    background-color: #ffffff;
+    background-color: #F9F6EE;
   }
   a:hover {
     color: #747bff;
   }
   button {
-    background-color: #f9f9f9;
+    background-color: #f9f7f0;
   }
 }
 
