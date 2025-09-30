@@ -55,47 +55,103 @@
 }
 
 /* Unified typography classes for both rendered text and textarea */
-.typography-title {
-  font-size: 42px;
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.025em;
-  font-family: 'Source Serif Pro', Georgia, Cambria, 'Times New Roman', Times, serif;
-  text-align: center;
+.typography-title,
+h1.typography-title {
+  font-size: 42px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.025em !important;
+  font-family: 'Source Serif Pro', Georgia, Cambria, 'Times New Roman', Times, serif !important;
+  text-align: center !important;
+  margin: 0 !important;
+  padding: 24px 8px 12px 8px !important; /* top: 24px, sides: 8px, bottom: 12px */
 }
 
-.typography-h2 {
-  font-size: 36px;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.025em;
-  font-family: 'Sohne Bold', system-ui, sans-serif;
-  text-align: left;
+textarea.typography-title {
+  font-size: 42px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.025em !important;
+  font-family: 'Source Serif Pro', Georgia, Cambria, 'Times New Roman', Times, serif !important;
+  text-align: center !important;
+  margin: 0 !important;
+  padding: 24px 8px 0px 8px !important; /* top: 24px, sides: 8px, bottom: 0px to prevent extra space */
+  vertical-align: top !important;
+  box-sizing: border-box !important;
 }
 
-.typography-h3 {
-  font-size: 24px;
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.025em;
-  font-family: 'Sohne Medium', system-ui, sans-serif;
-  text-align: left;
+.typography-h2,
+h2.typography-h2 {
+  font-size: 36px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.025em !important;
+  font-family: 'Sohne Bold', system-ui, sans-serif !important;
+  text-align: left !important;
+  margin: 0 !important;
+  padding: 32px 8px 12px 8px !important; /* top: 32px, sides: 8px, bottom: 12px */
 }
 
-.typography-body {
-  font-size: 20px;
-  font-weight: 400;
-  line-height: 1.6;
-  font-family: 'Source Serif Pro', Georgia, Cambria, 'Times New Roman', Times, serif;
-  text-align: justify;
+textarea.typography-h2 {
+  font-size: 36px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.025em !important;
+  font-family: 'Sohne Bold', system-ui, sans-serif !important;
+  text-align: left !important;
+  margin: 0 !important;
+  padding: 32px 8px 0px 8px !important; /* top: 32px, sides: 8px, bottom: 0px to prevent extra space */
+  vertical-align: top !important;
+  box-sizing: border-box !important;
 }
 
-.typography-caption {
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
-  font-family: 'Sohne Regular', system-ui, sans-serif;
-  text-align: left;
+.typography-h3,
+h3.typography-h3 {
+  font-size: 24px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.025em !important;
+  font-family: 'Sohne Medium', system-ui, sans-serif !important;
+  text-align: left !important;
+  margin: 0 !important;
+  padding: 24px 8px 12px 8px !important; /* top: 24px, sides: 8px, bottom: 12px */
+}
+
+textarea.typography-h3 {
+  font-size: 24px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.025em !important;
+  font-family: 'Sohne Medium', system-ui, sans-serif !important;
+  text-align: left !important;
+  margin: 0 !important;
+  padding: 24px 8px 0px 8px !important; /* top: 24px, sides: 8px, bottom: 0px to prevent extra space */
+  vertical-align: top !important;
+  box-sizing: border-box !important;
+}
+
+.typography-body,
+textarea.typography-body,
+p.typography-body {
+  font-size: 20px !important;
+  font-weight: 400 !important;
+  line-height: 1.6 !important;
+  font-family: 'Source Serif Pro', Georgia, Cambria, 'Times New Roman', Times, serif !important;
+  text-align: justify !important;
+  margin: 0 !important;
+  padding: 0px 8px 12px 8px !important; /* top: 0px, sides: 8px, bottom: 12px */
+}
+
+.typography-caption,
+textarea.typography-caption,
+span.typography-caption {
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+  font-family: 'Sohne Regular', system-ui, sans-serif !important;
+  text-align: left !important;
+  margin: 0 !important;
+  padding: 0px 8px 12px 8px !important; /* top: 0px, sides: 8px, bottom: 12px */
 }
 
 :root {

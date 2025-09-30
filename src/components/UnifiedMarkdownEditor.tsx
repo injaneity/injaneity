@@ -37,31 +37,31 @@ function renderSection(section: string): React.ReactNode {
     const trimmedLine = line.trim();
     
     if (!trimmedLine) {
-      return <div key={index} className="h-6" />; // Empty line spacing
+      return null; // Let CSS handle line spacing
     }
 
     // Determine the type and render accordingly
     if (trimmedLine.startsWith('# ')) {
       return (
-        <Typography key={index} variant="title" className="mb-2">
+        <Typography key={index} variant="title">
           {parseInlineMarkdown(trimmedLine.slice(2))}
         </Typography>
       );
     } else if (trimmedLine.startsWith('## ')) {
       return (
-        <Typography key={index} variant="h2" className="mb-4">
+        <Typography key={index} variant="h2">
           {parseInlineMarkdown(trimmedLine.slice(3))}
         </Typography>
       );
     } else if (trimmedLine.startsWith('### ')) {
       return (
-        <Typography key={index} variant="h3" className="mb-3">
+        <Typography key={index} variant="h3">
           {parseInlineMarkdown(trimmedLine.slice(4))}
         </Typography>
       );
     } else {
       return (
-        <Typography key={index} variant="body" className="mb-3">
+        <Typography key={index} variant="body">
           {parseInlineMarkdown(trimmedLine)}
         </Typography>
       );
@@ -81,7 +81,9 @@ interface EditableSectionProps {
 
 function EditableSection({ section, sectionIndex, isEditing, onEdit, onUpdate, onDelete, onStopEditing }: EditableSectionProps) {
   const [value, setValue] = useState(section);
+  const [initialHeight, setInitialHeight] = useState<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setValue(section);
@@ -94,21 +96,39 @@ function EditableSection({ section, sectionIndex, isEditing, onEdit, onUpdate, o
       const length = textareaRef.current.value.length;
       textareaRef.current.setSelectionRange(length, length);
       
-      // Auto-resize on mount
+      // Set height to match the initial rendered height exactly
       const textarea = textareaRef.current;
-      textarea.style.height = 'auto';
-      textarea.style.height = Math.max(textarea.scrollHeight, 100) + 'px';
+      if (initialHeight !== null) {
+        // Use the exact measured height from the rendered element
+        textarea.style.height = initialHeight + 'px';
+        textarea.style.maxHeight = initialHeight + 'px';
+        textarea.style.minHeight = initialHeight + 'px';
+      } else {
+        // Fallback to auto-resize
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.max(textarea.scrollHeight, 100) + 'px';
+      }
     }
-  }, [isEditing]);
+  }, [isEditing, initialHeight]);
 
-  // Auto-resize when value changes
+  // Auto-resize when value changes, but maintain exact height from initial render
   useEffect(() => {
     if (isEditing && textareaRef.current) {
       const textarea = textareaRef.current;
-      textarea.style.height = 'auto';
-      textarea.style.height = Math.max(textarea.scrollHeight, 100) + 'px';
+      
+      // If we have an initial height, maintain it exactly to prevent jumping
+      if (initialHeight !== null) {
+        textarea.style.height = initialHeight + 'px';
+        textarea.style.maxHeight = initialHeight + 'px';
+        textarea.style.minHeight = initialHeight + 'px';
+      } else {
+        // Only auto-resize if we don't have an initial height measurement
+        textarea.style.height = 'auto';
+        const scrollHeight = textarea.scrollHeight;
+        textarea.style.height = Math.max(scrollHeight, 100) + 'px';
+      }
     }
-  }, [value, isEditing]);
+  }, [value, isEditing, initialHeight]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Escape') {
@@ -143,36 +163,44 @@ function EditableSection({ section, sectionIndex, isEditing, onEdit, onUpdate, o
     handleSaveOrDelete(value);
   };
 
+  const handleEditClick = () => {
+    // Capture the current height of the rendered section before editing
+    if (sectionRef.current) {
+      const height = sectionRef.current.offsetHeight;
+      setInitialHeight(height);
+    }
+    onEdit(sectionIndex);
+  };
+
   if (isEditing) {
     const typographyClass = getTypographyClass(value);
     
     return (
-      <div className="mb-3">
-        <textarea
-          ref={textareaRef}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
-          className={`w-full bg-transparent border-none outline-none resize-none p-0 m-0 ${typographyClass}`}
-          style={{ 
-            minHeight: '100px',
-            height: 'auto',
-            whiteSpace: 'pre-wrap',
-            wordWrap: 'break-word',
-            boxShadow: 'none',
-            overflow: 'hidden'
-          }}
-          placeholder="Type your content here..."
-        />
-      </div>
+      <textarea
+        ref={textareaRef}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        className={`w-full bg-transparent border-none outline-none resize-none hover:bg-muted/10 rounded-md transition-colors ${typographyClass}`}
+        style={{ 
+          minHeight: '100px',
+          height: 'auto',
+          whiteSpace: 'pre-wrap',
+          wordWrap: 'break-word',
+          boxShadow: 'none',
+          overflow: 'hidden'
+        }}
+        placeholder="Type your content here..."
+      />
     );
   }
 
   return (
     <div 
-      className="cursor-pointer hover:bg-muted/10 rounded-md p-2 -m-2 transition-colors"
-      onClick={() => onEdit(sectionIndex)}
+      ref={sectionRef}
+      className="cursor-pointer hover:bg-muted/10 rounded-md transition-colors"
+      onClick={handleEditClick}
       title="Click to edit this section"
     >
       {renderSection(section)}
