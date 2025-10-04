@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import { UnifiedMarkdownEditor } from './components/UnifiedMarkdownEditor'
+import { DynamicMarkdownPage } from './components/DynamicMarkdownPage'
 
 import defaultMarkdown from './default.md?raw'
 import projectsMarkdown from './projects.md?raw'
@@ -12,7 +13,9 @@ function App() {
         <Routes>
           <Route path="/" element={<UnifiedMarkdownEditor key="default" initialContent={defaultMarkdown} />} />
           <Route path="/projects" element={<UnifiedMarkdownEditor key="projects" initialContent={projectsMarkdown} />} />
+          <Route path="/projects/:id" element={<DynamicMarkdownPage basePath="projects" />} />
           <Route path="/experience" element={<UnifiedMarkdownEditor key="experience" initialContent={experienceMarkdown} />} />
+          <Route path="/experience/:id" element={<DynamicMarkdownPage basePath="experience" />} />
         </Routes>
       </div>
     </div>
