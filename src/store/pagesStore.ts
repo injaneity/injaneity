@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { githubService, PageMetadata } from '@/services/github/GitHubService';
+import { githubService, type PageMetadata } from '@/services/github/GitHubService';
 
 interface PagesState {
   pages: PageMetadata[];

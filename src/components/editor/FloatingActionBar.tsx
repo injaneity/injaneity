@@ -11,10 +11,7 @@ interface FloatingActionBarProps {
   demoMode?: boolean;
 }
 
-export const FloatingActionBar: React.FC<FloatingActionBarProps> = ({
-  saveStatus,
-  demoMode
-}) => {
+export const FloatingActionBar: React.FC<FloatingActionBarProps> = () => {
   const { isAuthenticated, login, logout } = useAuth();
   const navigate = useNavigate();
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -92,7 +89,7 @@ export const FloatingActionBar: React.FC<FloatingActionBarProps> = ({
     toast.success('Logged out');
   };
 
-  const handleSearchSelect = (path: string, section: string, slug: string) => {
+  const handleSearchSelect = (section: string, slug: string) => {
     // Navigate using React Router - automatically adds to browser history
     if (section === 'root') {
       if (slug === 'landing') {
@@ -159,7 +156,7 @@ export const FloatingActionBar: React.FC<FloatingActionBarProps> = ({
                 searchResults.map((page) => (
                   <button
                     key={page.path}
-                    onClick={() => handleSearchSelect(page.path, page.section, page.slug)}
+                    onClick={() => handleSearchSelect(page.section, page.slug)}
                     className="w-full px-4 py-2.5 text-left hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors"
                   >
                     <div className="font-sohne-medium text-sm text-gray-900">{page.title}</div>

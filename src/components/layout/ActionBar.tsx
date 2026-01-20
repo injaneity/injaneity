@@ -4,10 +4,9 @@ import { SettingsMenu } from './SettingsMenu';
 
 interface ActionBarProps {
   saveStatus: 'saved' | 'saving' | 'unsaved';
-  onOpenSettings: () => void;
 }
 
-export const ActionBar: React.FC<ActionBarProps> = ({ saveStatus, onOpenSettings }) => {
+export const ActionBar: React.FC<ActionBarProps> = ({ saveStatus }) => {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
