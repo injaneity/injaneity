@@ -152,23 +152,35 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
       const anchor = target.closest('a') as HTMLAnchorElement | null;
       if (!anchor) return;
 
-      const href = anchor.getAttribute('href');
+      let href = anchor.getAttribute('href');
       if (!href) return;
 
-      // Check if link is external
-      const isExternal = /^https?:\/\//i.test(href);
+      // Check if link is external (has protocol or looks like a domain)
+      const hasProtocol = /^https?:\/\//i.test(href);
       const isSpecial = href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:');
+      const looksLikeDomain = /^[a-z0-9.-]+\.[a-z]{2,}(\/|$)/i.test(href);
+      const isExternal = hasProtocol || looksLikeDomain;
       
-      // For internal links, always prevent default and navigate
+      // For internal links (starts with / or ./ or ../), navigate via React Router
       if (!isExternal && !isSpecial) {
         e.preventDefault();
         e.stopPropagation();
-        navigate(href);
+        // Normalize relative paths for React Router
+        const normalizedHref = href.startsWith('./') ? href.slice(1) : href;
+        navigate(normalizedHref);
         return;
       }
       
-      // External and special links open normally
-      // (browser will handle them)
+      // For external links without protocol, add https:// and open in new tab
+      if (isExternal && !isSpecial) {
+        e.preventDefault();
+        e.stopPropagation();
+        const fullUrl = hasProtocol ? href : `https://${href}`;
+        window.open(fullUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      
+      // Special links (mailto, tel, hash) work normally
     };
 
     dom.addEventListener('click', handleClick);
@@ -187,7 +199,9 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
       
       anchors.forEach((anchor) => {
         const href = anchor.getAttribute('href') || '';
-        const isExternal = /^https?:\/\//i.test(href);
+        const hasProtocol = /^https?:\/\//i.test(href);
+        const looksLikeDomain = /^[a-z0-9.-]+\.[a-z]{2,}(\/|$)/i.test(href);
+        const isExternal = hasProtocol || looksLikeDomain;
         
         // Strip target and rel from internal links
         if (!isExternal) {
@@ -197,6 +211,11 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
           // Ensure external links have proper attributes
           anchor.setAttribute('target', '_blank');
           anchor.setAttribute('rel', 'noopener noreferrer nofollow');
+          
+          // Add https:// protocol if missing for domain-only links
+          if (looksLikeDomain && !hasProtocol) {
+            anchor.setAttribute('href', `https://${href}`);
+          }
         }
         
         // Mount icon if not already mounted
