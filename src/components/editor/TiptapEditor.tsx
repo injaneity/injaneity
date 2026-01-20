@@ -6,8 +6,8 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Typography from '@tiptap/extension-typography';
 import { Markdown } from 'tiptap-markdown';
 import { useEffect, useRef, useState } from 'react';
-import { FloatingActionBar } from './FloatingActionBar';
 import { ArrowUp } from 'lucide-react';
+import { SearchBar } from '../layout/SearchBar';
 
 interface TiptapEditorProps {
   initialContent: string;
@@ -39,7 +39,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
       Link.configure({
         openOnClick: !editable,
         HTMLAttributes: {
-          class: 'text-[#F38020] underline hover:text-[#d96d1a] cursor-pointer',
+          class: 'text-[#F6821F] underline hover:text-[#d96d1a] cursor-pointer transition-colors',
         },
       }),
       Image,
@@ -58,7 +58,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     editable,
     editorProps: {
       attributes: {
-        class: 'prose prose-lg max-w-[680px] mx-auto focus:outline-none px-4 pt-[33vh] pb-[60vh] font-sohne-regular min-h-screen',
+        class: 'prose prose-lg max-w-[680px] mx-auto focus:outline-none px-4 py-8',
       },
     },
     onUpdate: ({ editor }) => {
@@ -127,18 +127,24 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   }
 
   return (
-    <div className="w-full min-h-screen bg-white relative">
-      {/* Floating action bar - shown on all pages */}
-      <FloatingActionBar />
+    <div className="w-full min-h-screen bg-white relative flex items-center">
+      {/* Centered Search Bar */}
+      <div className="absolute top-0 left-0 right-0 pt-12 pb-8">
+        <div className="max-w-2xl mx-auto px-4">
+          <SearchBar centered />
+        </div>
+      </div>
 
-      {/* Editor content - starts in middle with top padding */}
-      <EditorContent editor={editor} />
+      {/* Editor content - centered vertically */}
+      <div className="w-full">
+        <EditorContent editor={editor} />
+      </div>
 
       {/* Back to top button */}
       {showBackToTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 flex items-center gap-2 text-[#F38020] hover:text-[#d96d1a] transition-colors duration-300 z-50 font-sohne-regular text-sm"
+          className="fixed bottom-8 right-8 flex items-center gap-2 text-[#F6821F] hover:text-[#d96d1a] transition-colors duration-300 z-50 font-sohne-regular text-sm"
           aria-label="Back to top"
         >
           <span>Return to top</span>
