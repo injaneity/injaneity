@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { TiptapEditor } from '@/components/editor/TiptapEditor';
 
-const STORAGE_KEY = 'landing_page';
-
 export const LandingPage: React.FC = () => {
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);

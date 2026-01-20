@@ -14,7 +14,6 @@ export const EditorPage: React.FC = () => {
   // Determine the actual slug from the pathname
   const pathname = location.pathname;
   const actualSlug = slug || pathname.split('/').filter(Boolean)[0] || 'landing';
-  const contentPath = `src/content/${actualSlug}.md`;
 
   useEffect(() => {
     loadContent();
