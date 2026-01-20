@@ -25,23 +25,14 @@ export const EditorPage: React.FC = () => {
     setError(null);
 
     try {
-      // Check localStorage first
-      const storageKey = `page_${contentPath}`;
-      const localContent = localStorage.getItem(storageKey);
-
-      if (localContent) {
-        // Use local edits if they exist
-        setContent(localContent);
-      } else {
-        // Try to load the actual markdown file from content folder
-        try {
-          const module = await import(`../../content/${actualSlug}.md?raw`);
-          setContent(module.default);
-        } catch (importError) {
-          // If file doesn't exist, use default content
-          const defaultContent = `# ${actualSlug.charAt(0).toUpperCase() + actualSlug.slice(1)}\n\nStart writing...`;
-          setContent(defaultContent);
-        }
+      // Always load fresh from markdown file
+      try {
+        const module = await import(`../../content/${actualSlug}.md?raw`);
+        setContent(module.default);
+      } catch (importError) {
+        // If file doesn't exist, use default content
+        const defaultContent = `# ${actualSlug.charAt(0).toUpperCase() + actualSlug.slice(1)}\n\nStart writing...`;
+        setContent(defaultContent);
       }
     } catch (err: any) {
       console.error('Error loading content:', err);
@@ -52,9 +43,7 @@ export const EditorPage: React.FC = () => {
   };
 
   const handleContentChange = async (newContent: string) => {
-    // Save to localStorage (client-side only)
-    const storageKey = `page_${contentPath}`;
-    localStorage.setItem(storageKey, newContent);
+    // Just update state, don't persist to localStorage
     setContent(newContent);
   };
 

@@ -96,6 +96,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
 
         // Check if content actually changed
         if (markdown !== lastContentRef.current) {
+          lastContentRef.current = markdown;
           setSaveStatus('unsaved');
           onSaveStatusChange?.('unsaved');
 
@@ -104,19 +105,18 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
             clearTimeout(saveTimeoutRef.current);
           }
 
-          // Set saving status and debounce save
+          // Debounce the callback to parent component
           saveTimeoutRef.current = setTimeout(() => {
             setSaveStatus('saving');
             onSaveStatusChange?.('saving');
             onContentChange(markdown);
-            lastContentRef.current = markdown;
 
-            // After save completes, set to saved
+            // After callback completes, set to saved
             setTimeout(() => {
               setSaveStatus('saved');
               onSaveStatusChange?.('saved');
-            }, 500);
-          }, 2000);
+            }, 100);
+          }, 1000);
         }
       }
     },
@@ -158,7 +158,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
       // Check if link is external (has protocol or looks like a domain)
       const hasProtocol = /^https?:\/\//i.test(href);
       const isSpecial = href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:');
-      const looksLikeDomain = /^[a-z0-9.-]+\.[a-z]{2,}(\/|$)/i.test(href);
+      const looksLikeDomain = /^[a-z0-9.-]+\.[a-z]{2,}/i.test(href);
       const isExternal = hasProtocol || looksLikeDomain;
       
       // For internal links (starts with / or ./ or ../), navigate via React Router
@@ -200,7 +200,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
       anchors.forEach((anchor) => {
         const href = anchor.getAttribute('href') || '';
         const hasProtocol = /^https?:\/\//i.test(href);
-        const looksLikeDomain = /^[a-z0-9.-]+\.[a-z]{2,}(\/|$)/i.test(href);
+        const looksLikeDomain = /^[a-z0-9.-]+\.[a-z]{2,}/i.test(href);
         const isExternal = hasProtocol || looksLikeDomain;
         
         // Strip target and rel from internal links

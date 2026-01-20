@@ -14,15 +14,7 @@ export const LandingPage: React.FC = () => {
   const loadContent = async () => {
     setLoading(true);
     try {
-      // Check localStorage for saved content
-      const localContent = localStorage.getItem(STORAGE_KEY);
-
-      if (localContent) {
-        setContent(localContent);
-        return;
-      }
-
-      // Try to load the landing markdown from the content folder
+      // Always load fresh from markdown file
       const module = await import('../../content/landing.md?raw');
       setContent(module.default);
     } catch (error: any) {
@@ -35,8 +27,7 @@ export const LandingPage: React.FC = () => {
   };
 
   const handleContentChange = async (newContent: string) => {
-    // Save to localStorage (client-side only)
-    localStorage.setItem(STORAGE_KEY, newContent);
+    // Just update state, don't persist to localStorage
     setContent(newContent);
   };
 
