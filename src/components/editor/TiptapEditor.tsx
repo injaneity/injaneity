@@ -280,7 +280,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   }
 
   return (
-    <div className="w-full h-screen bg-white flex flex-col overflow-hidden">
+    <div className="w-full min-h-screen bg-white flex flex-col overflow-hidden">
       {/* Centered Search Bar - Fixed at top */}
       <div className="flex-shrink-0 pt-12 pb-8 bg-white z-10">
         <div className="max-w-2xl mx-auto px-4">
@@ -289,8 +289,10 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
       </div>
 
       {/* Editor content - Scrollable area */}
-      <div className="flex-1 overflow-y-auto">
-        <EditorContent editor={editor} />
+      <div className="flex-1 overflow-y-auto px-2 sm:px-4 md:px-8">
+        <div className="w-full max-w-[680px] mx-auto">
+          <EditorContent editor={editor} />
+        </div>
       </div>
 
       {/* Back to top button */}
