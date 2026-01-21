@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowUp } from 'lucide-react';
 import { SearchBar } from '../layout/SearchBar';
 import { InputRule } from '@tiptap/core';
+import { ErrorBoundary } from '../ErrorBoundary';
 
 interface TiptapEditorProps {
   initialContent: string;
@@ -58,19 +59,23 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
             new InputRule({
               find: /\[([^\]]+)\]\(([^)]+)\)$/,
               handler: ({ state, range, match }) => {
-                const { tr } = state;
-                const start = range.from;
-                const end = range.to;
-                const linkText = match[1];
-                const linkUrl = match[2];
+                try {
+                  const { tr } = state;
+                  const start = range.from;
+                  const end = range.to;
+                  const linkText = match[1];
+                  const linkUrl = match[2];
 
-                if (linkText && linkUrl) {
-                  tr.replaceWith(start, end, state.schema.text(linkText))
-                    .addMark(
-                      start,
-                      start + linkText.length,
-                      state.schema.marks.link.create({ href: linkUrl })
-                    );
+                  if (linkText && linkUrl) {
+                    tr.replaceWith(start, end, state.schema.text(linkText))
+                      .addMark(
+                        start,
+                        start + linkText.length,
+                        state.schema.marks.link.create({ href: linkUrl })
+                      );
+                  }
+                } catch (error) {
+                  console.error('Link input rule error:', error);
                 }
               },
             }),
@@ -142,11 +147,16 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   useEffect(() => {
     if (!editor || !editor.view) return;
 
-    // Ensure the view is fully mounted with a DOM element
-    const viewDom = (editor.view as any).dom;
-    if (!viewDom || !(viewDom instanceof HTMLElement)) return;
-    
-    const dom = viewDom as HTMLElement;
+    // Delay access to ensure DOM is fully mounted
+    const timeoutId = setTimeout(() => {
+      // Double-check editor and view still exist
+      if (!editor || !editor.view) return;
+
+      // Ensure the view is fully mounted with a DOM element
+      const viewDom = (editor.view as any).dom;
+      if (!viewDom || !(viewDom instanceof HTMLElement)) return;
+      
+      const dom = viewDom as HTMLElement;
 
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
@@ -187,18 +197,29 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     };
 
     dom.addEventListener('click', handleClick);
-    return () => dom.removeEventListener('click', handleClick);
+    return () => {
+      dom.removeEventListener('click', handleClick);
+      clearTimeout(timeoutId);
+    };
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, [editor, editable, navigate]);
 
   // Mount icons and fix link attributes
   useEffect(() => {
     if (!editor || !editor.view) return;
 
-    // Ensure the view is fully mounted with a DOM element
-    const viewDom = (editor.view as any).dom;
-    if (!viewDom || !(viewDom instanceof HTMLElement)) return;
-    
-    const dom = viewDom as HTMLElement;
+    // Delay access to ensure DOM is fully mounted
+    const timeoutId = setTimeout(() => {
+      // Double-check editor and view still exist
+      if (!editor || !editor.view) return;
+
+      // Ensure the view is fully mounted with a DOM element
+      const viewDom = (editor.view as any).dom;
+      if (!viewDom || !(viewDom instanceof HTMLElement)) return;
+      
+      const dom = viewDom as HTMLElement;
 
     const processLinks = () => {
       const anchors = Array.from(dom.querySelectorAll('a')) as HTMLAnchorElement[];
@@ -259,12 +280,16 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
 
     return () => {
       observer.disconnect();
+      clearTimeout(timeoutId);
       try {
         editor.off('update', updateHandler);
       } catch (e) {
         // ignore
       }
     };
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, [editor]);
 
   // Show back to top button when scrolled down
@@ -286,32 +311,34 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   }
 
   return (
-    <div className="w-full min-h-screen bg-white flex flex-col overflow-hidden">
-      {/* Centered Search Bar - Fixed at top */}
-      <div className="flex-shrink-0 pt-12 pb-8 bg-white z-10">
-        <div className="max-w-2xl mx-auto px-4">
-          <SearchBar centered />
+    <ErrorBoundary>
+      <div className="w-full min-h-screen bg-white flex flex-col overflow-hidden">
+        {/* Centered Search Bar - Fixed at top */}
+        <div className="flex-shrink-0 pt-12 pb-8 bg-white z-10">
+          <div className="max-w-2xl mx-auto px-4">
+            <SearchBar centered />
+          </div>
         </div>
-      </div>
 
-      {/* Editor content - Scrollable area */}
-      <div className="flex-1 overflow-y-auto px-2 sm:px-4 md:px-8">
-        <div className="w-full max-w-[680px] mx-auto">
-          <EditorContent editor={editor} />
+        {/* Editor content - Scrollable area */}
+        <div className="flex-1 overflow-y-auto px-2 sm:px-4 md:px-8">
+          <div className="w-full max-w-[680px] mx-auto">
+            <EditorContent editor={editor} />
+          </div>
         </div>
-      </div>
 
-      {/* Back to top button */}
-      {showBackToTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-8 right-8 flex items-center gap-2 text-[#F6821F] hover:text-[#d96d1a] transition-colors duration-300 z-50 font-sohne-regular text-sm"
-          aria-label="Back to top"
-        >
-          <span>Return to top</span>
-          <ArrowUp className="w-5 h-5" />
-        </button>
-      )}
-    </div>
+        {/* Back to top button */}
+        {showBackToTop && (
+          <button
+            onClick={scrollToTop}
+            className="fixed bottom-8 right-8 flex items-center gap-2 text-[#F6821F] hover:text-[#d96d1a] transition-colors duration-300 z-50 font-sohne-regular text-sm"
+            aria-label="Back to top"
+          >
+            <span>Return to top</span>
+            <ArrowUp className="w-5 h-5" />
+          </button>
+        )}
+      </div>
+    </ErrorBoundary>
   );
 };
