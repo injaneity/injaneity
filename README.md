@@ -1,6 +1,6 @@
 # zanechee.dev
 
-Welcome to my portfolio! Even though it may be more accurate to call it a markdown editor that happens to have my profile information in it. This is my (slightly) opinionated take on a markdown editor (with some bells and whistles) built on top of the Tiptap editor (shoutout to Substack & Notion), inspired by these (personal) design principles:
+Welcome to my portfolio! Even though it may be more accurate to call it a markdown editor that happens to have my profile information in it. This is my (slightly) opinionated take on a markdown editor, with some cool features to boot, built on top of the Tiptap editor, inspired by these (personal) design principles:
 
 - No buttons, only shortcuts (therefore no action bar)
 - No distinction between editing and viewing mode
