@@ -142,8 +142,11 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   useEffect(() => {
     if (!editor || !editor.view) return;
 
-    const dom = ((editor.view as any).dom) as HTMLElement | null;
-    if (!dom) return;
+    // Ensure the view is fully mounted with a DOM element
+    const viewDom = (editor.view as any).dom;
+    if (!viewDom || !(viewDom instanceof HTMLElement)) return;
+    
+    const dom = viewDom as HTMLElement;
 
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
@@ -191,8 +194,11 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   useEffect(() => {
     if (!editor || !editor.view) return;
 
-    const dom = ((editor.view as any).dom) as HTMLElement | null;
-    if (!dom) return;
+    // Ensure the view is fully mounted with a DOM element
+    const viewDom = (editor.view as any).dom;
+    if (!viewDom || !(viewDom instanceof HTMLElement)) return;
+    
+    const dom = viewDom as HTMLElement;
 
     const processLinks = () => {
       const anchors = Array.from(dom.querySelectorAll('a')) as HTMLAnchorElement[];
