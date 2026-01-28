@@ -123,9 +123,8 @@
   font-weight: 500;
 }
 
-/* Add link icon using SVG data URI for reliability */
-.ProseMirror a[data-icon-mounted="true"]::after {
-  content: '';
+/* Link icon as real DOM element */
+.ProseMirror .link-icon {
   display: inline-block;
   width: 16px;
   height: 16px;
@@ -136,14 +135,15 @@
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  pointer-events: none;
+  cursor: pointer;
+  user-select: none;
 }
 
 .ProseMirror a:hover {
   color: #d96d1a;
 }
 
-.ProseMirror a:hover::after {
+.ProseMirror a:hover .link-icon {
   filter: brightness(0.9);
 }
 

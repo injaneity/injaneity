@@ -13,6 +13,7 @@ import { InputRule } from '@tiptap/core';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { createLowlight, common } from 'lowlight';
 import { CodeBlockWithUI } from './extensions/CodeBlockWithUI';
+import { LinkIconExtension } from './extensions/LinkIconExtension';
 
 interface TiptapEditorProps {
   initialContent: string;
@@ -72,7 +73,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         addInputRules() {
           return [
             new InputRule({
-              find: /\[([^\]]+)\]\(([^)]+)\)$/,
+              find: /\[([^\]]+)\]\(([^)]+)\)\s$/,
               handler: ({ state, range, match }) => {
                 try {
                   const { tr } = state;
@@ -82,12 +83,18 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
                   const linkUrl = match[2];
 
                   if (linkText && linkUrl) {
-                    tr.replaceWith(start, end, state.schema.text(linkText))
+                    const linkEndPos = start + linkText.length;
+
+                    // Replace the markdown syntax with the link text and mark it
+                    tr.replaceWith(start, end, state.schema.text(linkText + ' '))
                       .addMark(
                         start,
-                        start + linkText.length,
+                        linkEndPos,
                         state.schema.marks.link.create({ href: linkUrl })
                       );
+
+                    // Position cursor after the link and space
+                    tr.setSelection(state.selection.constructor.near(tr.doc.resolve(linkEndPos + 1)));
                   }
                 } catch (error) {
                   console.error('Link input rule error:', error);
@@ -102,6 +109,8 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
           class: 'text-[#F6821F] cursor-pointer transition-colors',
         },
       }),
+      // Add link icon extension
+      LinkIconExtension,
     ],
     content: initialContent,
     editable,
@@ -177,6 +186,29 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
       const target = e.target as HTMLElement | null;
       if (!target) return;
 
+      // Handle link icon clicks
+      if (target.classList.contains('link-icon')) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const anchor = target.previousElementSibling as HTMLAnchorElement;
+        if (!anchor || anchor.tagName !== 'A') return;
+
+        // Find the link in the editor and select it
+        try {
+          const pos = editor.view.posAtDOM(anchor, 0);
+          const linkText = anchor.textContent || '';
+
+          editor.chain()
+            .focus()
+            .setTextSelection({ from: pos, to: pos + linkText.length })
+            .run();
+        } catch (error) {
+          console.error('Error selecting link:', error);
+        }
+        return;
+      }
+
       const anchor = target.closest('a') as HTMLAnchorElement | null;
       if (!anchor) return;
 
@@ -188,7 +220,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
       const isSpecial = href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:');
       const looksLikeDomain = /^[a-z0-9.-]+\.[a-z]{2,}/i.test(href);
       const isExternal = hasProtocol || looksLikeDomain;
-      
+
       // For internal links (starts with / or ./ or ../), navigate via React Router
       if (!isExternal && !isSpecial) {
         e.preventDefault();
@@ -198,7 +230,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         navigate(normalizedHref);
         return;
       }
-      
+
       // For external links without protocol, add https:// and open in new tab
       if (isExternal && !isSpecial) {
         e.preventDefault();
@@ -207,13 +239,118 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         window.open(fullUrl, '_blank', 'noopener,noreferrer');
         return;
       }
-      
+
       // Special links (mailto, tel, hash) work normally
     };
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Backspace') {
+        const { state } = editor;
+        const { selection } = state;
+        const pos = selection.from;
+
+        // Only handle when nothing is selected
+        if (!selection.empty) return;
+        if (pos <= 0) return;
+
+        try {
+          const $current = state.doc.resolve(pos);
+          const currentMarks = $current.marks();
+
+          // CASE 1: Check if position right before cursor (pos-1) has a link mark
+          if (pos > 0) {
+            const $prev = state.doc.resolve(pos - 1);
+            const prevMarks = $prev.marks();
+            let linkMark = prevMarks.find(m => m.type.name === 'link');
+
+            // CASE 2: If pos-1 has no link mark, check if it's a space after a link
+            if (!linkMark && pos > 1) {
+              const charAtPrevPos = state.doc.textBetween(pos - 1, pos);
+              if (charAtPrevPos === ' ') {
+                const $twoBack = state.doc.resolve(pos - 2);
+                const twoBackMarks = $twoBack.marks();
+                linkMark = twoBackMarks.find(m => m.type.name === 'link');
+              }
+            }
+
+            if (linkMark) {
+              const currentHasLink = currentMarks.some(m =>
+                m.type.name === 'link' && m.attrs.href === linkMark.attrs.href
+              );
+
+              if (!currentHasLink) {
+                // Find the start of the link
+                let linkStart = pos - 1;
+                for (let i = pos - 2; i >= 0; i--) {
+                  const $pos = state.doc.resolve(i);
+                  const marks = $pos.marks();
+                  const hasSameLinkMark = marks.some(m =>
+                    m.type.name === 'link' && m.attrs.href === linkMark.attrs.href
+                  );
+                  if (!hasSameLinkMark) {
+                    linkStart = i + 1;
+                    break;
+                  }
+                  if (i === 0) {
+                    linkStart = 0;
+                  }
+                }
+
+                // Find the actual end of the link (excluding trailing space if any)
+                let linkEnd = linkStart;
+                for (let i = linkStart; i < pos; i++) {
+                  const $pos = state.doc.resolve(i);
+                  const marks = $pos.marks();
+                  const hasSameLinkMark = marks.some(m =>
+                    m.type.name === 'link' && m.attrs.href === linkMark.attrs.href
+                  );
+                  if (hasSameLinkMark) {
+                    linkEnd = i + 1;
+                  }
+                }
+
+                // Check if there's a space after the link that should also be deleted
+                let deleteEnd = pos;
+                const charAtPos = state.doc.textBetween(pos - 1, pos);
+                if (charAtPos === ' ') {
+                  deleteEnd = pos;
+                } else if (pos < state.doc.content.size) {
+                  const charAfter = state.doc.textBetween(pos, pos + 1);
+                  if (charAfter === ' ') {
+                    deleteEnd = pos + 1;
+                  }
+                }
+
+                const linkText = state.doc.textBetween(linkStart, linkEnd).trim();
+                const linkHref = linkMark.attrs.href;
+                const markdownText = `[${linkText}](${linkHref})`;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Use transaction directly to insert plain text without processing
+                const { tr } = editor.state;
+                tr.delete(linkStart, deleteEnd);
+                tr.insertText(markdownText, linkStart);
+
+                editor.view.dispatch(tr);
+                editor.commands.focus();
+
+                return;
+              }
+            }
+          }
+        } catch (err) {
+          console.error('Error in backspace handler:', err);
+        }
+      }
+    };
+
     dom.addEventListener('click', handleClick);
+    dom.addEventListener('keydown', handleKeyDown);
     return () => {
       dom.removeEventListener('click', handleClick);
+      dom.removeEventListener('keydown', handleKeyDown);
       clearTimeout(timeoutId);
     };
     }, 0);
@@ -221,87 +358,68 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     return () => clearTimeout(timeoutId);
   }, [editor, editable, navigate]);
 
-  // Mount icons and fix link attributes
+  // Handle link attributes (target, rel) for internal vs external links
   useEffect(() => {
     if (!editor || !editor.view) return;
 
-    // Delay access to ensure DOM is fully mounted
     const timeoutId = setTimeout(() => {
-      // Double-check editor and view still exist
       if (!editor || !editor.view) return;
 
-      // Ensure the view is fully mounted with a DOM element
       const viewDom = (editor.view as any).dom;
       if (!viewDom || !(viewDom instanceof HTMLElement)) return;
-      
+
       const dom = viewDom as HTMLElement;
 
-    const processLinks = () => {
-      const anchors = Array.from(dom.querySelectorAll('a')) as HTMLAnchorElement[];
-      
-      anchors.forEach((anchor) => {
-        const href = anchor.getAttribute('href') || '';
-        const hasProtocol = /^https?:\/\//i.test(href);
-        const looksLikeDomain = /^[a-z0-9.-]+\.[a-z]{2,}/i.test(href);
-        const isExternal = hasProtocol || looksLikeDomain;
-        
-        // Strip target and rel from internal links
-        if (!isExternal) {
-          anchor.removeAttribute('target');
-          anchor.removeAttribute('rel');
-        } else {
-          // Ensure external links have proper attributes
-          anchor.setAttribute('target', '_blank');
-          anchor.setAttribute('rel', 'noopener noreferrer nofollow');
-          
-          // Add https:// protocol if missing for domain-only links
-          if (looksLikeDomain && !hasProtocol) {
-            anchor.setAttribute('href', `https://${href}`);
+      const processLinkAttributes = () => {
+        const anchors = Array.from(dom.querySelectorAll('a')) as HTMLAnchorElement[];
+
+        anchors.forEach((anchor) => {
+          const href = anchor.getAttribute('href') || '';
+          const hasProtocol = /^https?:\/\//i.test(href);
+          const looksLikeDomain = /^[a-z0-9.-]+\.[a-z]{2,}/i.test(href);
+          const isExternal = hasProtocol || looksLikeDomain;
+
+          if (!isExternal) {
+            anchor.removeAttribute('target');
+            anchor.removeAttribute('rel');
+          } else {
+            anchor.setAttribute('target', '_blank');
+            anchor.setAttribute('rel', 'noopener noreferrer nofollow');
+
+            if (looksLikeDomain && !hasProtocol) {
+              anchor.setAttribute('href', `https://${href}`);
+            }
           }
-        }
-        
-        // Mount icon if not already mounted
-        if (!anchor.dataset.iconMounted) {
-          // Remove any existing icon spans first
-          const existingIcons = anchor.querySelectorAll('.link-icon-root');
-          existingIcons.forEach(icon => icon.remove());
-          
-          // Create and append icon using CSS content instead of React
-          anchor.dataset.iconMounted = 'true';
-        }
+        });
+      };
+
+      processLinkAttributes();
+
+      const observer = new MutationObserver(() => {
+        requestAnimationFrame(processLinkAttributes);
       });
-    };
 
-    // Process immediately and after any DOM changes
-    processLinks();
-    
-    // Use MutationObserver to catch any DOM changes
-    const observer = new MutationObserver(() => {
-      requestAnimationFrame(processLinks);
-    });
-    
-    observer.observe(dom, {
-      childList: true,
-      subtree: true,
-      attributes: false,
-    });
+      observer.observe(dom, {
+        childList: true,
+        subtree: true,
+        attributes: false,
+      });
 
-    // Also process on editor updates
-    const updateHandler = () => {
-      requestAnimationFrame(processLinks);
-    };
+      const updateHandler = () => {
+        requestAnimationFrame(processLinkAttributes);
+      };
 
-    editor.on('update', updateHandler);
+      editor.on('update', updateHandler);
 
-    return () => {
-      observer.disconnect();
-      clearTimeout(timeoutId);
-      try {
-        editor.off('update', updateHandler);
-      } catch (e) {
-        // ignore
-      }
-    };
+      return () => {
+        observer.disconnect();
+        clearTimeout(timeoutId);
+        try {
+          editor.off('update', updateHandler);
+        } catch (e) {
+          // ignore
+        }
+      };
     }, 0);
 
     return () => clearTimeout(timeoutId);
