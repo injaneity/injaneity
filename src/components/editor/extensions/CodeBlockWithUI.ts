@@ -50,51 +50,6 @@ export const CodeBlockWithUI = CodeBlockLowlight.extend({
         return false;
       },
 
-      // Handle Shift+Enter to create new line within code block (stay inside)
-      'Shift-Enter': () => {
-        if (this.editor.isActive('codeBlock')) {
-          const { state, view } = this.editor;
-          const { tr, selection } = state;
-          tr.insertText('\n', selection.from, selection.to);
-          view.dispatch(tr);
-          return true;
-        }
-        return false;
-      },
-
-      // Handle Enter to exit code block and create new paragraph
-      Enter: () => {
-        if (this.editor.isActive('codeBlock')) {
-          const { state, view } = this.editor;
-          const { selection } = state;
-          const { $from } = selection;
-
-          // Check if we're at the end of the code block
-          const isAtEnd = $from.parentOffset === $from.parent.nodeSize - 2;
-
-          // Check if current line is empty
-          const textContent = $from.parent.textContent;
-          const currentLineStart = textContent.lastIndexOf('\n', $from.parentOffset - 1) + 1;
-          const currentLineEnd = textContent.indexOf('\n', $from.parentOffset);
-          const currentLine = textContent.slice(
-            currentLineStart,
-            currentLineEnd === -1 ? textContent.length : currentLineEnd
-          );
-
-          // If current line is empty or we're at the end, exit the code block
-          if (currentLine.trim() === '' || isAtEnd) {
-            return this.editor.commands.exitCode();
-          }
-
-          // Otherwise, insert a newline within the code block
-          const { tr } = state;
-          tr.insertText('\n', selection.from, selection.to);
-          view.dispatch(tr);
-          return true;
-        }
-        return false;
-      },
-
       // Handle Backspace to remove full indent and matching braces
       Backspace: () => {
         if (this.editor.isActive('codeBlock')) {
