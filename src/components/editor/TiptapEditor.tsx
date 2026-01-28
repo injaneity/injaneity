@@ -13,6 +13,8 @@ import { SearchBar } from '../layout/SearchBar';
 import { InputRule } from '@tiptap/core';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { createLowlight, common } from 'lowlight';
+import type { Transaction } from '@tiptap/pm/state';
+import type { EditorState } from '@tiptap/pm/state';
 
 interface TiptapEditorProps {
   initialContent: string;
@@ -54,7 +56,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
             // Handle Tab to indent
             Tab: () => {
               if (this.editor.isActive('codeBlock')) {
-                return this.editor.commands.command(({ tr }) => {
+                return this.editor.commands.command(({ tr }: { tr: Transaction }) => {
                   // Insert 2 spaces for indentation
                   tr.insertText('  ');
                   return true;
@@ -65,7 +67,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
             // Handle Shift-Tab to outdent
             'Shift-Tab': () => {
               if (this.editor.isActive('codeBlock')) {
-                return this.editor.commands.command(({ tr, state }) => {
+                return this.editor.commands.command(({ tr, state }: { tr: Transaction; state: EditorState }) => {
                   const { selection } = state;
                   const { $from } = selection;
                   
@@ -90,7 +92,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
             // Handle Backspace to remove full indent
             Backspace: () => {
               if (this.editor.isActive('codeBlock')) {
-                return this.editor.commands.command(({ tr, state }) => {
+                return this.editor.commands.command(({ tr, state }: { tr: Transaction; state: EditorState }) => {
                   const { selection } = state;
                   const { $from, empty } = selection;
                   
