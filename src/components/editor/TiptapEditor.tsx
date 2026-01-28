@@ -14,6 +14,7 @@ import { ErrorBoundary } from '../ErrorBoundary';
 import { createLowlight, common } from 'lowlight';
 import { CodeBlockWithUI } from './extensions/CodeBlockWithUI';
 import { LinkIconExtension } from './extensions/LinkIconExtension';
+import { TextSelection } from '@tiptap/pm/state';
 
 interface TiptapEditorProps {
   initialContent: string;
@@ -94,7 +95,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
                       );
 
                     // Position cursor after the link and space
-                    tr.setSelection(state.selection.constructor.near(tr.doc.resolve(linkEndPos + 1)));
+                    tr.setSelection(TextSelection.near(tr.doc.resolve(linkEndPos + 1)));
                   }
                 } catch (error) {
                   console.error('Link input rule error:', error);
