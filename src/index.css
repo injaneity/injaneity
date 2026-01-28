@@ -192,97 +192,145 @@
   line-height: 1.5;
 }
 
-/* Syntax Highlighting Styles - Srcery color scheme */
+/* Code Block Component Styles */
+.ProseMirror .code-block-wrapper {
+  position: relative;
+  margin: 1rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e5e5;
+}
+
+/* Header with language label and copy button */
+.ProseMirror .code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background: #fafafa;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+/* Language label (top-left) */
+.ProseMirror .language-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b6b6b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  user-select: none;
+}
+
+/* Copy button (top-right) */
+.ProseMirror .copy-button {
+  padding: 0.25rem;
+  color: #6b6b6b;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ProseMirror .copy-button:hover {
+  color: #1f1f1f;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Syntax Highlighting Styles - VSCode Light Plus */
 .ProseMirror .hljs {
   display: block;
   overflow-x: auto;
   padding: 1rem;
-  color: #1F1F1F;
+  color: #1f1f1f;
   background-color: #f5f5f5 !important;
-  border-radius: 6px;
+  border-radius: 0 0 8px 8px;
   font-family: 'Monaco', 'Courier New', monospace;
   font-size: 14px;
   line-height: 1.5;
 }
 
-/* Keywords - Srcery red */
+/* Comments - green, italic */
+.ProseMirror .hljs-comment,
+.ProseMirror .hljs-quote {
+  color: #008000;
+  font-style: italic;
+}
+
+/* Keywords - blue, bold */
 .ProseMirror .hljs-keyword,
 .ProseMirror .hljs-selector-tag,
 .ProseMirror .hljs-literal,
 .ProseMirror .hljs-section {
-  color: #EF2F27;
+  color: #0000FF;
   font-weight: 600;
 }
 
-/* Control keywords and built-ins - Srcery blue */
-.ProseMirror .hljs-built_in,
-.ProseMirror .hljs-doctag {
-  color: #2C78BF;
-}
-
-/* Strings - Srcery green */
+/* Strings - red/brown */
 .ProseMirror .hljs-string,
 .ProseMirror .hljs-template-variable,
 .ProseMirror .hljs-addition,
 .ProseMirror .hljs-meta-string {
-  color: #519F50;
+  color: #A31515;
 }
 
-/* Functions and class names - Srcery yellow/gold */
+/* Numbers - teal/green */
+.ProseMirror .hljs-number {
+  color: #098658;
+}
+
+/* Functions - brown/gold */
 .ProseMirror .hljs-function,
 .ProseMirror .hljs-title.function_,
-.ProseMirror .hljs-title.class_,
-.ProseMirror .hljs-class,
-.ProseMirror .hljs-title.class,
 .ProseMirror .hljs-title {
-  color: #FBB829;
+  color: #795E26;
   font-weight: 500;
 }
 
-/* Types - Srcery cyan */
+/* Types and built-ins - cyan/blue */
 .ProseMirror .hljs-type,
-.ProseMirror .hljs-selector-class {
-  color: #0AAEB3;
+.ProseMirror .hljs-built_in,
+.ProseMirror .hljs-selector-class,
+.ProseMirror .hljs-doctag {
+  color: #267F99;
 }
 
-/* Variables and parameters - Srcery orange */
+/* Variables and attributes - dark blue */
 .ProseMirror .hljs-variable,
 .ProseMirror .hljs-attr,
 .ProseMirror .hljs-params,
 .ProseMirror .hljs-property,
 .ProseMirror .hljs-attribute {
-  color: #FF5F00;
+  color: #001080;
 }
 
-/* Numbers - Srcery magenta */
-.ProseMirror .hljs-number {
-  color: #E02C6D;
+/* Class names - cyan */
+.ProseMirror .hljs-title.class_,
+.ProseMirror .hljs-class,
+.ProseMirror .hljs-title.class {
+  color: #267F99;
 }
 
-/* Comments - Srcery bright black/gray */
-.ProseMirror .hljs-comment,
-.ProseMirror .hljs-quote {
-  color: #918175;
-  font-style: italic;
-}
-
-/* Meta and annotations - muted gray */
-.ProseMirror .hljs-meta,
-.ProseMirror .hljs-meta-keyword {
-  color: #918175;
-}
-
-/* Operators and punctuation - Srcery hard black */
+/* Operators and punctuation - default foreground */
 .ProseMirror .hljs-operator,
 .ProseMirror .hljs-punctuation {
-  color: #2D2C29;
+  color: #1f1f1f;
 }
 
-/* Tags in markup - Srcery red */
+/* Tags in markup - blue */
 .ProseMirror .hljs-tag,
 .ProseMirror .hljs-name,
 .ProseMirror .hljs-selector-id {
-  color: #EF2F27;
+  color: #0000FF;
+}
+
+/* Meta and annotations - gray */
+.ProseMirror .hljs-meta,
+.ProseMirror .hljs-meta-keyword {
+  color: #808080;
 }
 
 /* Emphasis */
@@ -294,16 +342,16 @@
   font-weight: 700;
 }
 
-/* Regular expressions - Srcery magenta */
+/* Regular expressions - dark red */
 .ProseMirror .hljs-regexp {
-  color: #E02C6D;
+  color: #811F3F;
 }
 
-/* Symbols - Srcery cyan */
+/* Symbols - blue */
 .ProseMirror .hljs-symbol,
 .ProseMirror .hljs-bullet,
 .ProseMirror .hljs-link {
-  color: #0AAEB3;
+  color: #0000FF;
 }
 
 .ProseMirror blockquote {
