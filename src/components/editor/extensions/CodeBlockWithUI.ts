@@ -14,14 +14,11 @@ export const CodeBlockWithUI = CodeBlockLowlight.extend({
     return {
       // Handle Tab to indent
       Tab: () => {
-        console.log('[Tab] Pressed, isActive:', this.editor.isActive('codeBlock'));
         if (this.editor.isActive('codeBlock')) {
-          console.log('[Tab] Inserting 2 spaces');
           const { state, view } = this.editor;
           const { tr, selection } = state;
           tr.insertText('  ', selection.from, selection.to);
           view.dispatch(tr);
-          console.log('[Tab] Insert complete');
           return true;
         }
         return false;
@@ -29,7 +26,6 @@ export const CodeBlockWithUI = CodeBlockLowlight.extend({
 
       // Handle Shift+Tab to outdent
       'Shift-Tab': () => {
-        console.log('[Shift-Tab] Pressed, isActive:', this.editor.isActive('codeBlock'));
         if (this.editor.isActive('codeBlock')) {
           const { state, view } = this.editor;
           const { tr, selection } = state;
@@ -41,13 +37,11 @@ export const CodeBlockWithUI = CodeBlockLowlight.extend({
 
           // Check if line starts with spaces
           const leadingSpaces = line.match(/^(\s+)/)?.[0].length || 0;
-          console.log('[Shift-Tab] Leading spaces:', leadingSpaces);
           if (leadingSpaces > 0) {
             // Remove up to 2 spaces from the beginning
             const spacesToRemove = Math.min(2, leadingSpaces);
             tr.delete(lineStart, lineStart + spacesToRemove);
             view.dispatch(tr);
-            console.log('[Shift-Tab] Outdent complete');
             return true;
           }
 
@@ -58,14 +52,11 @@ export const CodeBlockWithUI = CodeBlockLowlight.extend({
 
       // Handle Shift+Enter to create new line within code block (stay inside)
       'Shift-Enter': () => {
-        console.log('[Shift-Enter] Pressed, isActive:', this.editor.isActive('codeBlock'));
         if (this.editor.isActive('codeBlock')) {
-          console.log('[Shift-Enter] Inserting newline');
           const { state, view } = this.editor;
           const { tr, selection } = state;
           tr.insertText('\n', selection.from, selection.to);
           view.dispatch(tr);
-          console.log('[Shift-Enter] Insert complete');
           return true;
         }
         return false;
