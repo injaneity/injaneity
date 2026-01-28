@@ -21,7 +21,7 @@ export default function CodeBlockComponent({ node }: NodeViewProps) {
   const language = (node.attrs.language as string | null) || 'plaintext';
 
   return (
-    <NodeViewWrapper className="code-block-wrapper">
+    <NodeViewWrapper className="code-block-wrapper" data-drag-handle="">
       <div className="code-block-header" contentEditable={false}>
         <span className="language-label">{language}</span>
         <button
@@ -30,6 +30,7 @@ export default function CodeBlockComponent({ node }: NodeViewProps) {
           aria-label="Copy code"
           type="button"
           tabIndex={-1}
+          onMouseDown={(e) => e.preventDefault()}
         >
           {copied ? <Check size={16} /> : <Copy size={16} />}
         </button>
