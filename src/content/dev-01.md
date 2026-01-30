@@ -10,7 +10,4 @@ Recall that a complete binary tree is stored in an array where the children of t
 
 In the first few iterations, we often hit the same L1 CPU cache line (that was pulled) when the root node was retrieved. In contrast, a standard sorted array binary search makes massive jumps (such as `N/2` to `N/4`) immediately, causing cache misses at almost every step (therefore inefficient access).
 
-There is a caveat to be noted: this is optimal for **write-once, read-many** workloads. In write-heavy cases, insertion is expensive `O(N)` as it often requires reconstructing the entire array -- this is where a flat array is likely better.
-
-
-
+There is a caveat: this is optimal for **write-once, read-many** workloads. In write-heavy cases, insertion is expensive `O(N)` as it often requires reconstructing the entire array -- this is where a flat array is likely better.
