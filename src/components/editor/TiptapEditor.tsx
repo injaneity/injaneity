@@ -57,7 +57,6 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
           class: 'hljs',
         },
       }),
-      ImageWithCaption,
       Placeholder.configure({
         placeholder,
         emptyEditorClass: 'is-editor-empty',
@@ -69,6 +68,9 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         transformCopiedText: true,
         linkify: true,
       }),
+      // ImageWithCaption must come AFTER Markdown extension
+      // so markdown is parsed first, then our custom rendering applies
+      ImageWithCaption,
       // Link extension must be last to avoid duplicate registration warning
       Link.extend({
         addInputRules() {
