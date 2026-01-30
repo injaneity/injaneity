@@ -122,6 +122,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     editorProps: {
       attributes: {
         class: 'prose prose-lg max-w-[680px] mx-auto focus:outline-none px-4 py-8',
+        spellcheck: 'false',
       },
     },
     onUpdate: ({ editor }) => {
