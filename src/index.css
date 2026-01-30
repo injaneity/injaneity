@@ -376,3 +376,24 @@
   pointer-events: none;
   height: 0;
 }
+
+/* Image with Caption Styles */
+.ProseMirror .image-with-caption {
+  margin: 2rem 0;
+}
+
+.ProseMirror .image-with-caption img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+}
+
+.ProseMirror .image-with-caption figcaption {
+  font-size: 16px;
+  color: #6b6b6b;
+  font-style: italic;
+  text-align: center;
+  margin-top: 0.75rem;
+  line-height: 1.5;
+}

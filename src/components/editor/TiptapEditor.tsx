@@ -1,7 +1,6 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
-import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import Typography from '@tiptap/extension-typography';
 import { Markdown } from 'tiptap-markdown';
@@ -14,6 +13,7 @@ import { ErrorBoundary } from '../ErrorBoundary';
 import { createLowlight, common } from 'lowlight';
 import { CodeBlockWithUI } from './extensions/CodeBlockWithUI';
 import { LinkIconExtension } from './extensions/LinkIconExtension';
+import { ImageWithCaption } from './extensions/ImageWithCaption';
 import { TextSelection } from '@tiptap/pm/state';
 
 interface TiptapEditorProps {
@@ -57,7 +57,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
           class: 'hljs',
         },
       }),
-      Image,
+      ImageWithCaption,
       Placeholder.configure({
         placeholder,
         emptyEditorClass: 'is-editor-empty',

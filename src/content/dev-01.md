@@ -4,7 +4,7 @@
 
 [Eytzinger Layout](https://algorithmica.org/en/eytzinger) optimises the memory access pattern of binary search by storing the sorted data in a **balanced binary tree**, instead of a flat array. This allows for access of the next midpoint in a breadth-first search order:
 
-![alt text](images/eytzinger.png)
+![Visualisation of Eytzinger's Layout](/images/eytzinger.png)
 
 Recall that a complete binary tree is stored in an array where the children of the node at index `k` are located at indices `2k + 1` and `2k + 2`. Since the next midpoint is always a child node of the current midpoint, there is significant spatial locality at higher levels of the tree that we can take advantage of.
 
