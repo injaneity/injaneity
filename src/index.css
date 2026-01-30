@@ -377,48 +377,27 @@
   height: 0;
 }
 
-/* Image with Caption Styles */
-.ProseMirror figure.image-with-caption {
-  margin: 2rem 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  transition: opacity 0.2s;
-  pointer-events: none; /* Let clicks pass through empty space */
+/* Image Preview Styles */
+.ProseMirror .image-node {
+  margin: 1rem 0;
+  display: block;
 }
 
-.ProseMirror figure.image-with-caption:hover {
-  opacity: 0.8;
-}
-
-.ProseMirror figure.image-with-caption img {
+.ProseMirror .image-node img {
   max-width: 100%;
   height: auto;
-  border-radius: 8px;
+  cursor: pointer;
   display: block;
-  transition: transform 0.2s;
-  pointer-events: auto; /* Image itself is clickable */
+  transition: border-left 0.2s;
+  border-left: 3px solid transparent;
 }
 
-.ProseMirror figure.image-with-caption img:hover {
-  transform: scale(0.98);
+/* Hover highlight - left border */
+.ProseMirror .image-node img:hover {
+  border-left: 3px solid #d1d5db;
 }
 
-.ProseMirror figure.image-with-caption figcaption {
-  font-size: 16px;
-  color: #6b6b6b;
-  font-style: italic;
-  text-align: center;
-  margin-top: 0.75rem;
-  line-height: 1.5;
-  font-family: 'Sohne Regular', system-ui, sans-serif;
-  pointer-events: auto; /* Caption is clickable */
-}
-
-/* Selected image indicator */
-.ProseMirror .ProseMirror-selectednode figure.image-with-caption {
-  outline: 2px solid #F6821F;
-  outline-offset: 2px;
-  border-radius: 8px;
+/* Selected image indicator - left border */
+.ProseMirror .ProseMirror-selectednode .image-node img {
+  border-left: 3px solid #d1d5db;
 }

@@ -1,6 +1,7 @@
 import { Node } from '@tiptap/core';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 import { NodeSelection } from '@tiptap/pm/state';
+import { InputRule } from '@tiptap/core';
 import { ImageWithCaptionComponent } from './ImageWithCaptionComponent';
 
 export const ImageWithCaption = Node.create({
@@ -41,18 +42,6 @@ export const ImageWithCaption = Node.create({
           };
         },
       },
-      {
-        tag: 'figure',
-        getAttrs: (element) => {
-          const img = element.querySelector('img');
-          if (!img) return false;
-          return {
-            src: img.getAttribute('src'),
-            alt: img.getAttribute('alt'),
-            title: img.getAttribute('title'),
-          };
-        },
-      },
     ];
   },
 
@@ -67,14 +56,54 @@ export const ImageWithCaption = Node.create({
     return ReactNodeViewRenderer(ImageWithCaptionComponent);
   },
 
+  addInputRules() {
+    return [
+      new InputRule({
+        // Match ![alt](url) followed by space
+        find: /!\[([^\]]*)\]\(([^)]+)\)\s$/,
+        handler: ({ state, range, match }) => {
+          const [, alt, src] = match;
+          const { tr } = state;
+          const start = range.from;
+          const end = range.to;
+
+          if (src) {
+            const $start = state.doc.resolve(start);
+            const parent = $start.parent;
+
+            // Create image node
+            const imageNode = this.type.create({
+              src,
+              alt: alt || null,
+            });
+
+            // Check if paragraph only contains the markdown (ignoring whitespace)
+            const textContent = parent.textContent.trim();
+            const markdownText = match[0].trim(); // The matched markdown without trailing space
+
+            // If the paragraph only contains this markdown, replace entire paragraph
+            if (textContent === markdownText || textContent === markdownText.replace(/\s$/, '')) {
+              const parentPos = $start.before();
+              tr.replaceWith(parentPos, parentPos + parent.nodeSize, imageNode);
+            } else {
+              // Multiple things in paragraph, just replace the markdown text
+              tr.replaceWith(start, end, imageNode);
+            }
+          }
+        },
+      }),
+    ];
+  },
+
   addKeyboardShortcuts() {
     return {
       // Convert to markdown on Enter when image is selected
+      // OR convert markdown to image when Enter pressed on markdown text
       Enter: ({ editor }) => {
         const { state } = editor;
         const { selection } = state;
 
-        // For atomic nodes, check if the selection is a NodeSelection
+        // Case 1: Image node selected - convert to markdown
         if (selection instanceof NodeSelection && selection.node.type.name === 'image') {
           const node = selection.node;
           const { src, alt, title } = node.attrs;
@@ -96,6 +125,33 @@ export const ImageWithCaption = Node.create({
             editor.commands.focus();
           }, 10);
           return true;
+        }
+
+        // Case 2: Cursor in paragraph - check if line has image markdown
+        const { $from } = selection;
+        const parent = $from.parent;
+
+        if (parent.type.name === 'paragraph') {
+          const textContent = parent.textContent;
+          const imageMatch = textContent.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+
+          if (imageMatch) {
+            const [, alt, src] = imageMatch;
+            const parentPos = $from.before();
+
+            // Create image node
+            const imageNode = this.type.create({
+              src,
+              alt: alt || null,
+            });
+
+            // Replace paragraph with image
+            const { tr } = editor.state;
+            tr.replaceWith(parentPos, parentPos + parent.nodeSize, imageNode);
+            editor.view.dispatch(tr);
+
+            return true;
+          }
         }
 
         return false;

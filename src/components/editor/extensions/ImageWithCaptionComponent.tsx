@@ -36,24 +36,18 @@ export const ImageWithCaptionComponent: React.FC<NodeViewProps> = ({
 
   return (
     <NodeViewWrapper
-      as="figure"
-      className="image-with-caption"
+      className="image-node"
       contentEditable={false}
       data-image-markdown="true"
     >
       <img
         src={src}
         alt={alt || ''}
-        className="max-w-full h-auto rounded-lg cursor-pointer"
+        className="max-w-full h-auto cursor-pointer"
         loading="lazy"
         onClick={handleClick}
         data-image-markdown="true"
       />
-      {alt && (
-        <figcaption className="text-sm text-gray-600 italic text-center font-sohne-regular mt-3">
-          {alt}
-        </figcaption>
-      )}
     </NodeViewWrapper>
   );
 };
