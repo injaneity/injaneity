@@ -1,5 +1,7 @@
 <div align="center">
 
-### software engineer | find me at https://zanechee.dev
+### [zanechee.dev](https://zanechee.dev)
+
+the latest projects i'm working on:
 
 </div>
