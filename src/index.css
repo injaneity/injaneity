@@ -361,7 +361,7 @@
   padding-left: 1rem;
   margin: 1.5rem 0;
   font-style: italic;
-  color: #4a4a4a;
+  color: #999999;
 }
 
 .ProseMirror.is-editor-empty:first-child::before {
