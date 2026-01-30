@@ -1,7 +1,7 @@
 <div align="center">
 
-## [zanechee.dev](https://zanechee.dev)
+### [zanechee.dev](https://zanechee.dev)
 
-current projects i'm working on:
+projects i'm working on:
 
 </div>
