@@ -380,19 +380,17 @@
 /* Image with Caption Styles */
 .ProseMirror figure.image-with-caption {
   margin: 2rem 0;
-  display: flex !important;
+  display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
 }
 
 .ProseMirror figure.image-with-caption img {
-  max-width: 100% !important;
-  height: auto !important;
+  max-width: 100%;
+  height: auto;
   border-radius: 8px;
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
+  display: block;
 }
 
 .ProseMirror figure.image-with-caption figcaption {
@@ -403,24 +401,4 @@
   margin-top: 0.75rem;
   line-height: 1.5;
   font-family: 'Sohne Regular', system-ui, sans-serif;
-}
-
-/* Standalone images without captions */
-.ProseMirror img:not(figure img) {
-  margin: 2rem 0 !important;
-  max-width: 100% !important;
-  height: auto !important;
-  border-radius: 8px;
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-/* Catch-all for any img tag in ProseMirror to ensure visibility */
-.ProseMirror img {
-  display: block !important;
-  max-width: 100% !important;
-  height: auto !important;
-  visibility: visible !important;
-  opacity: 1 !important;
 }

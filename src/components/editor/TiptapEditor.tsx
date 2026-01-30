@@ -159,18 +159,6 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     if (editor && initialContent !== ((editor.storage as any).markdown as any).getMarkdown()) {
       editor.commands.setContent(initialContent);
       lastContentRef.current = initialContent;
-
-      // Force image decoding after content loads
-      setTimeout(() => {
-        const images = editor.view.dom.querySelectorAll('img');
-        images.forEach((img: HTMLImageElement) => {
-          if (img.decode) {
-            img.decode().catch((err) => {
-              console.error('Image decode error:', err);
-            });
-          }
-        });
-      }, 100);
     }
   }, [initialContent, editor]);
 

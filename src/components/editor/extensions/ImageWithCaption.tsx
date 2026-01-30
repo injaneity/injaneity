@@ -77,8 +77,7 @@ export const ImageWithCaption = Node.create({
           'img',
           mergeAttributes(HTMLAttributes, {
             class: 'max-w-full h-auto rounded-lg',
-            // Remove lazy loading - it may prevent decoding
-            decoding: 'async',
+            loading: 'lazy',
           }),
         ],
         [
@@ -94,7 +93,7 @@ export const ImageWithCaption = Node.create({
       'img',
       mergeAttributes(HTMLAttributes, {
         class: 'max-w-full h-auto rounded-lg',
-        decoding: 'async',
+        loading: 'lazy',
       }),
     ];
   },
