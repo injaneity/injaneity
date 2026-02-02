@@ -4,6 +4,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Text Selection Highlight - Pastel Orange */
+::selection {
+  background-color: #FFD7B5;
+  color: #1F1F1F;
+}
+
+::-moz-selection {
+  background-color: #FFD7B5;
+  color: #1F1F1F;
+}
+
 /* Sohne Font Declarations */
 
 @font-face {
