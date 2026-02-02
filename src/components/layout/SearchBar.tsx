@@ -53,7 +53,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ centered = false }) => {
           onFocus={() => setIsOpen(true)}
           onBlur={() => setTimeout(() => setIsOpen(false), 200)}
           placeholder="Search pages..."
-          className={`${centered ? 'w-full pl-10 pr-10 py-3 text-base' : 'w-64 pl-9 pr-9 py-2'} border-b-2 border-gray-300 focus:outline-none focus:border-[#F6821F] transition-all bg-transparent`}
+          className={`${centered ? 'w-full pl-10 pr-10 py-3 text-base' : 'w-64 pl-9 pr-9 py-2 border-b-2 border-gray-300 focus:border-[#F6821F]'} focus:outline-none transition-all bg-transparent`}
         />
         {query && (
           <button

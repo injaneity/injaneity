@@ -5,8 +5,8 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Typography from '@tiptap/extension-typography';
 import { Markdown } from 'tiptap-markdown';
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowUp } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ArrowUp, Code, ArrowDownToLine } from 'lucide-react';
 import { SearchBar } from '../layout/SearchBar';
 import { InputRule } from '@tiptap/core';
 import { ErrorBoundary } from '../ErrorBoundary';
@@ -516,6 +516,26 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const location = useLocation();
+  const downloadMarkdown = () => {
+    if (!editor) return;
+
+    const markdown = ((editor.storage as any).markdown as any).getMarkdown();
+    const blob = new Blob([markdown], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+
+    // Generate filename from current route
+    const pathname = location.pathname;
+    const pageName = pathname === '/' ? 'landing' : pathname.slice(1).replace(/\//g, '-');
+    a.href = url;
+    a.download = `${pageName}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   if (!editor) {
     return null;
   }
@@ -526,7 +546,20 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         {/* Centered Search Bar - Fixed at top */}
         <div className="flex-shrink-0 pt-12 pb-8 bg-white z-10">
           <div className="max-w-2xl mx-auto px-4">
-            <SearchBar centered />
+            <div className="flex items-center gap-4 border-b-2 border-gray-300 focus-within:border-[#F6821F] transition-colors pr-1">
+              <div className="flex-1">
+                <SearchBar centered />
+              </div>
+              {/* Download button next to search bar */}
+              <button
+                onClick={downloadMarkdown}
+                className="group flex items-center gap-2 text-gray-400 hover:text-[#F6821F] transition-all duration-300 font-sohne-regular text-sm flex-shrink-0"
+                aria-label="Download page as markdown"
+              >
+                <span className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-300 whitespace-nowrap">download page as markdown</span>
+                <ArrowDownToLine className="w-5 h-5 flex-shrink-0" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -537,17 +570,30 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
           </div>
         </div>
 
-        {/* Back to top button */}
-        {showBackToTop && (
+        {/* Bottom right buttons container */}
+        <div className="fixed bottom-8 right-8 flex flex-col items-end gap-4 z-50">
+          {/* Return to top button - original behavior */}
+          {showBackToTop && (
+            <button
+              onClick={scrollToTop}
+              className="flex items-center gap-2 text-[#F6821F] hover:text-[#d96d1a] transition-colors duration-300 font-sohne-regular text-sm"
+              aria-label="Back to top"
+            >
+              <span>Return to top</span>
+              <ArrowUp className="w-5 h-5" />
+            </button>
+          )}
+
+          {/* View source code - text expands left */}
           <button
-            onClick={scrollToTop}
-            className="fixed bottom-8 right-8 flex items-center gap-2 text-[#F6821F] hover:text-[#d96d1a] transition-colors duration-300 z-50 font-sohne-regular text-sm"
-            aria-label="Back to top"
+            onClick={() => window.open('https://github.com/injaneity/injaneity', '_blank', 'noopener,noreferrer')}
+            className="group flex items-center gap-2 text-gray-400 hover:text-[#F6821F] transition-all duration-300 font-sohne-regular text-sm"
+            aria-label="View source code"
           >
-            <span>Return to top</span>
-            <ArrowUp className="w-5 h-5" />
+            <span className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-300 whitespace-nowrap">view source code</span>
+            <Code className="w-5 h-5 flex-shrink-0" />
           </button>
-        )}
+        </div>
       </div>
     </ErrorBoundary>
   );
