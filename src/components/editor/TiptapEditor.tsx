@@ -47,10 +47,8 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
           levels: [1, 2, 3],
         },
         link: false,
-        // Disable the default code block from StarterKit
         codeBlock: false,
       }),
-      // Add CodeBlockLowlight with custom UI
       CodeBlockWithUI.configure({
         lowlight,
         defaultLanguage: 'plaintext',
@@ -63,13 +61,8 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         emptyEditorClass: 'is-editor-empty',
       }),
       Typography,
-      Markdown.configure({
-        markedOptions: {
-          gfm: true, // GitHub Flavored Markdown
-        },
-      }),
+      Markdown,
       // ImageWithCaption must come AFTER Markdown extension
-      // so markdown is parsed first, then our custom rendering applies
       ImageWithCaption,
       // Link extension must be last to avoid duplicate registration warning
       Link.extend({

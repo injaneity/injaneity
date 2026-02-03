@@ -171,12 +171,27 @@
 .ProseMirror ol {
   margin: 1.5rem 0;
   padding-left: 1.5rem;
+  list-style-position: outside;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
 }
 
 .ProseMirror li {
   font-size: 18px;
   line-height: 1.7;
   margin-bottom: 0.5rem;
+  display: list-item;
+}
+
+/* Ensure nested paragraphs in list items don't break layout */
+.ProseMirror li p {
+  margin-bottom: 0;
 }
 
 .ProseMirror code {
