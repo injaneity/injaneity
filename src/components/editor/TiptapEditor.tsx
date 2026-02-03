@@ -6,6 +6,8 @@ import Typography from '@tiptap/extension-typography';
 import { Markdown } from '@tiptap/markdown';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowUp, Code, ArrowDownToLine } from 'lucide-react';
@@ -51,6 +53,13 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         },
         link: false,
         codeBlock: false,
+      }),
+      TaskList,
+      TaskItem.configure({
+        nested: true,
+        HTMLAttributes: {
+          class: 'task-item',
+        },
       }),
       CodeBlockWithUI.configure({
         lowlight,
