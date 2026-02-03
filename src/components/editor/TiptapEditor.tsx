@@ -67,10 +67,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
       TextStyle,
       Color,
       ColoredText,
-      Markdown.configure({
-        transformPastedText: true,
-        transformCopiedText: true,
-      }),
+      Markdown,
       // ImageWithCaption must come AFTER Markdown extension
       ImageWithCaption,
       // Link extension must be last to avoid duplicate registration warning
