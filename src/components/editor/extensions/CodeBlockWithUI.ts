@@ -7,7 +7,9 @@ export const CodeBlockWithUI = CodeBlockLowlight.extend({
   name: 'codeBlock',
 
   addNodeView() {
-    return ReactNodeViewRenderer(CodeBlockComponent);
+    return ReactNodeViewRenderer(CodeBlockComponent, {
+      contentDOMElementTag: 'code',
+    });
   },
 
   addKeyboardShortcuts() {

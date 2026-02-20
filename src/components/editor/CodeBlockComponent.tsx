@@ -35,9 +35,7 @@ export default function CodeBlockComponent({ node }: NodeViewProps) {
           {copied ? <Check size={16} /> : <Copy size={16} />}
         </button>
       </div>
-      <pre>
-        <NodeViewContent<'code'> as="code" className="hljs" style={{ whiteSpace: 'pre' }} />
-      </pre>
+      <NodeViewContent<'pre'> as="pre" className="hljs" style={{ whiteSpace: 'pre' }} />
     </NodeViewWrapper>
   );
 }
