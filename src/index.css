@@ -238,6 +238,13 @@
   background: #f5f5f5;
 }
 
+.ProseMirror .code-block-wrapper pre {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
 /* Header with language label and copy button */
 .ProseMirror .code-block-header {
   display: flex;
