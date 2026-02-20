@@ -8,7 +8,7 @@ import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowUp, Code, ArrowDownToLine } from 'lucide-react';
 import { SearchBar } from '../layout/SearchBar';
@@ -58,7 +58,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   const imageConversionInProgress = useRef(false);
 
   // Create lowlight instance with common languages
-  const lowlight = createLowlight(common);
+  const lowlight = useMemo(() => createLowlight(common), []);
 
   const editor = useEditor({
     extensions: [

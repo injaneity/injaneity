@@ -19,13 +19,13 @@ def say_hello():
 	print("Hello World")
 ```
 
-Python executes module code top to bottom - it compiles source to bytecode first, and function definitions are still evaluated in order at runtime. Going step by step, the `def decorator(...)` statement creates a **function object** for `decorator`, and `def say_hello(...)` creates one for `say_hello`.
+Python executes code top to bottom, with function definitions evaluated in order at runtime. Going step by step, the `def decorator(...)` statement creates a **function object** for `decorator`, and `def say_hello(...)` creates one for `say_hello`.
 
 > The inner `wrapper` function object is created when `decorator(say_hello)` runs, but **not run yet**.
 
 `@decorator` transforms `say_hello` into `say_hello = decorator(say_hello)`. This returns the **function object** `wrapper` (NOT the function result), and from then on, `say_hello()` points to `wrapper`.
 
-> Though `say_hello` is no longer directly referenced, since the `wrapper` function references it, it will not be garbage collected till `wrapper` is also garbage collected.
+> Though `say_hello` is no longer directly referenced, since `wrapper` references it, it will not be garbage collected till `wrapper` is.
 
 ```python
 def decorator(func):
