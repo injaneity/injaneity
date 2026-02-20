@@ -1,3 +1,8 @@
+---
+created: 2026-01-30
+modified: 2026-02-20
+---
+
 # Eytzinger Layout
 
 > Credit to [@onebignick](https://www.nicholasong.fyi/) for showing me this

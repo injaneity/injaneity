@@ -67,21 +67,23 @@ export const SearchBar: React.FC<SearchBarProps> = ({ centered = false }) => {
 
       {isOpen && results.length > 0 && (
         <div className="absolute top-full mt-2 w-full bg-white border-2 border-gray-200 shadow-lg max-h-96 overflow-y-auto z-50">
-          {results.map((page: PageMetadata) => (
-            <button
-              key={page.path}
-              onMouseDown={() => handleSelect(page.slug)}
-              className="w-full px-4 py-4 text-left hover:bg-[#FFF5ED] transition-colors border-b border-gray-100 last:border-0 group"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex flex-col">
-                  <div className="font-semibold text-gray-900 group-hover:text-[#F6821F] transition-colors">{page.title}</div>
-                  <div className="text-xs text-gray-500 mt-1">{page.slug}.md</div>
+          {results.map((page: PageMetadata) => {
+            return (
+              <button
+                key={page.path}
+                onMouseDown={() => handleSelect(page.slug)}
+                className="w-full px-4 py-4 text-left hover:bg-[#FFF5ED] transition-colors border-b border-gray-100 last:border-0 group"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex flex-col">
+                    <div className="font-semibold text-gray-900 group-hover:text-[#F6821F] transition-colors">{page.title}</div>
+                    <div className="text-xs text-gray-500 mt-1">{page.slug}.md</div>
+                  </div>
+                  <div className="text-sm text-gray-400">{page.wordCount} words</div>
                 </div>
-                <div className="text-sm text-gray-400">{page.wordCount} words</div>
-              </div>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

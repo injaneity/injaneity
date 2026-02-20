@@ -1,3 +1,8 @@
+---
+created: 2026-02-06
+modified: 2026-02-06
+---
+
 #  not all hackathons
 
 When I first started out doing hackathons (my first being in 2019), the goal was simple: go there, solve a problem, hopefully win something. The *hopefully* made hackathons really fun, learning with friends - in the beginning, at least.

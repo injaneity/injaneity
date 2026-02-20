@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { TiptapEditor } from '@/components/editor/TiptapEditor';
 import { AlertCircle } from 'lucide-react';
+import { loadMarkdownBySlug, type MarkdownArticleMetadata } from '@/lib/markdown';
 
 export const EditorPage: React.FC = () => {
   const { slug } = useParams<{ slug?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
   const [content, setContent] = useState('');
+  const [metadata, setMetadata] = useState<MarkdownArticleMetadata>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,31 +17,33 @@ export const EditorPage: React.FC = () => {
   const pathname = location.pathname;
   const actualSlug = slug || pathname.split('/').filter(Boolean)[0] || 'landing';
 
-  useEffect(() => {
-    loadContent();
-  }, [actualSlug]);
-
-  const loadContent = async () => {
+  const loadContent = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      // Always load fresh from markdown file
-      try {
-        const module = await import(`../../content/${actualSlug}.md?raw`);
-        setContent(module.default);
-      } catch (importError) {
-        // If file doesn't exist, use default content
-        const defaultContent = `# ${actualSlug.charAt(0).toUpperCase() + actualSlug.slice(1)}\n\nStart writing...`;
-        setContent(defaultContent);
+      const document = await loadMarkdownBySlug(actualSlug);
+      if (document) {
+        setContent(document.content);
+        setMetadata(document.metadata);
+        return;
       }
-    } catch (err: any) {
+
+      // If file doesn't exist, use default content
+      const defaultContent = `# ${actualSlug.charAt(0).toUpperCase() + actualSlug.slice(1)}\n\nStart writing...`;
+      setContent(defaultContent);
+      setMetadata({});
+    } catch (err: unknown) {
       console.error('Error loading content:', err);
       setError('Failed to load page content');
     } finally {
       setLoading(false);
     }
-  };
+  }, [actualSlug]);
+
+  useEffect(() => {
+    void loadContent();
+  }, [loadContent]);
 
   const handleContentChange = async (newContent: string) => {
     // Just update state, don't persist to localStorage
@@ -82,6 +86,7 @@ export const EditorPage: React.FC = () => {
   return (
     <TiptapEditor
       initialContent={content}
+      articleMetadata={metadata}
       editable={true}
       onContentChange={handleContentChange}
       placeholder="Start writing..."

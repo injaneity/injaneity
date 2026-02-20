@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { loadMarkdownBySlug, parseMarkdownDocument } from '@/lib/markdown';
 
 export interface PageMetadata {
   title: string;
@@ -6,6 +7,8 @@ export interface PageMetadata {
   path: string;
   section: 'projects' | 'experience' | 'root';
   wordCount: number;
+  created?: string;
+  modified?: string;
 }
 
 interface PagesState {
@@ -59,8 +62,9 @@ const discoveredPages: PageMetadata[] = Object.entries(contentModules).map(([pat
   // Extract filename without extension (e.g., "../content/landing.md" -> "landing")
   const slug = path.replace('../content/', '').replace('.md', '');
   const section = determineSection(slug, path);
-  const title = extractTitle(content, slug);
-  const wordCount = countWords(content);
+  const parsedDocument = parseMarkdownDocument(content);
+  const title = parsedDocument.metadata.title || extractTitle(parsedDocument.content, slug);
+  const wordCount = countWords(parsedDocument.content);
 
   return {
     title,
@@ -68,17 +72,15 @@ const discoveredPages: PageMetadata[] = Object.entries(contentModules).map(([pat
     path,
     section,
     wordCount,
+    created: parsedDocument.metadata.created,
+    modified: parsedDocument.metadata.modified,
   };
 });
 
 // Helper to dynamically load markdown content
 export async function loadPageContent(slug: string): Promise<string | null> {
-  try {
-    const module = await import(`../content/${slug}.md?raw`);
-    return module.default;
-  } catch (e) {
-    return null;
-  }
+  const document = await loadMarkdownBySlug(slug);
+  return document?.content ?? null;
 }
 
 export const usePagesStore = create<PagesState>((_, get) => ({

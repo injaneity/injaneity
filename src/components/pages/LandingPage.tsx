@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { TiptapEditor } from '@/components/editor/TiptapEditor';
+import { loadMarkdownBySlug, type MarkdownArticleMetadata } from '@/lib/markdown';
 
 export const LandingPage: React.FC = () => {
   const [content, setContent] = useState('');
+  const [metadata, setMetadata] = useState<MarkdownArticleMetadata>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -12,13 +14,20 @@ export const LandingPage: React.FC = () => {
   const loadContent = async () => {
     setLoading(true);
     try {
-      // Always load fresh from markdown file
-      const module = await import('../../content/00-landing.md?raw');
-      setContent(module.default);
-    } catch (error: any) {
+      const document = await loadMarkdownBySlug('00-landing');
+      if (document) {
+        setContent(document.content);
+        setMetadata(document.metadata);
+        return;
+      }
+
+      setMetadata({});
+      setContent(`This page seems to be empty...`);
+    } catch (error: unknown) {
       console.error('Error loading content:', error);
       // Fallback default
       setContent(`This page seems to be empty...`);
+      setMetadata({});
     } finally {
       setLoading(false);
     }
@@ -53,6 +62,7 @@ export const LandingPage: React.FC = () => {
   return (
     <TiptapEditor
       initialContent={content}
+      articleMetadata={metadata}
       editable={true}
       onContentChange={handleContentChange}
       placeholder="Start writing your landing page..."

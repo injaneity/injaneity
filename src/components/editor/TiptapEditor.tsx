@@ -21,17 +21,31 @@ import { LinkIconExtension } from './extensions/LinkIconExtension';
 import { ImageWithCaption } from './extensions/ImageWithCaption';
 import { ColoredText } from './extensions/ColoredText';
 import { TextSelection } from '@tiptap/pm/state';
+import { formatArticleDate, serializeMarkdownDocument, type MarkdownArticleMetadata } from '@/lib/markdown';
 
 interface TiptapEditorProps {
   initialContent: string;
+  articleMetadata?: MarkdownArticleMetadata;
   editable: boolean;
   onContentChange?: (markdown: string) => void;
   placeholder?: string;
   onSaveStatusChange?: (status: 'saved' | 'saving' | 'unsaved') => void;
 }
 
+interface MarkdownSerializerMark {
+  attrs: {
+    href?: string;
+    isDownload?: boolean;
+  };
+}
+
+interface MarkdownLinkToken {
+  attrGet: (name: string) => string | null;
+}
+
 export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   initialContent,
+  articleMetadata,
   editable,
   onContentChange,
   placeholder = 'Start writing...',
@@ -39,7 +53,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
 }) => {
   const saveTimeoutRef = useRef<number | undefined>(undefined);
   const lastContentRef = useRef(initialContent);
-  const [_, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
+  const [, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [showBackToTop, setShowBackToTop] = useState(false);
   const imageConversionInProgress = useRef(false);
 
@@ -93,7 +107,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
                 if (!isSetContent) return null;
 
                 const { doc, schema } = newState;
-                let tr = newState.tr;
+                const tr = newState.tr;
                 let modified = false;
 
                 doc.descendants((node, pos) => {
@@ -127,12 +141,13 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
             ...this.parent?.(),
             markdown: {
               serialize: {
-                open(_state: any, _mark: any) {
+                open() {
                   return '[';
                 },
-                close(_state: any, mark: any) {
-                  const href = mark.attrs.href;
-                  const isDownload = mark.attrs.isDownload;
+                close(...args: unknown[]) {
+                  const mark = args[1] as MarkdownSerializerMark | undefined;
+                  const href = mark?.attrs.href ?? '';
+                  const isDownload = !!mark?.attrs.isDownload;
                   return isDownload ? `](!${href})` : `](${href})`;
                 },
               },
@@ -140,7 +155,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
                 // Override how the markdown extension parses links
                 link: {
                   mark: 'link',
-                  getAttrs: (tok: any) => {
+                  getAttrs: (tok: MarkdownLinkToken) => {
                     const href = tok.attrGet('href');
                     if (href && href.startsWith('!')) {
                       return {
@@ -159,9 +174,10 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
           };
         },
         addAttributes() {
-          const parentAttrs: any = this.parent?.() || {};
+          const parentAttrs = (this.parent?.() || {}) as Record<string, unknown>;
           // Exclude the class attribute from parent since we handle it in renderHTML
-          const { class: _, ...attrsWithoutClass } = parentAttrs;
+          const attrsWithoutClass = { ...parentAttrs };
+          delete attrsWithoutClass.class;
 
           return {
             ...attrsWithoutClass,
@@ -215,7 +231,8 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
           const styleAttr = isDownload ? { style: 'color: #F38020;' } : {};
 
           // Filter out class attribute
-          const { class: _, ...attrsWithoutClass } = HTMLAttributes;
+          const attrsWithoutClass = { ...HTMLAttributes };
+          delete attrsWithoutClass.class;
 
           return [
             'a',
@@ -277,7 +294,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
                 if (!docChanged) return null;
 
                 const { doc, schema } = newState;
-                let tr = newState.tr;
+                const tr = newState.tr;
                 let modified = false;
 
                 doc.descendants((node, pos) => {
@@ -307,7 +324,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
           // Transform download links on initial load
           setTimeout(() => {
             const { doc, schema } = this.editor.state;
-            let tr = this.editor.state.tr;
+            const tr = this.editor.state.tr;
             let modified = false;
 
             doc.descendants((node, pos) => {
@@ -406,7 +423,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
       if (!editor || !editor.view) return;
 
       // Ensure the view is fully mounted with a DOM element
-      const viewDom = (editor.view as any).dom;
+      const viewDom = editor.view.dom;
       if (!viewDom || !(viewDom instanceof HTMLElement)) return;
 
       const dom = viewDom as HTMLElement;
@@ -513,7 +530,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         const anchor = target.closest('a') as HTMLAnchorElement | null;
         if (!anchor) return;
 
-        let href = anchor.getAttribute('href');
+        const href = anchor.getAttribute('href');
         if (!href) return;
 
         // Check if link has download attribute or is a downloadable file
@@ -691,7 +708,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     const timeoutId = setTimeout(() => {
       if (!editor || !editor.view) return;
 
-      const viewDom = (editor.view as any).dom;
+      const viewDom = editor.view.dom;
       if (!viewDom || !(viewDom instanceof HTMLElement)) return;
 
       const dom = viewDom as HTMLElement;
@@ -746,7 +763,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         clearTimeout(timeoutId);
         try {
           editor.off('update', updateHandler);
-        } catch (e) {
+        } catch {
           // ignore
         }
       };
@@ -770,10 +787,15 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   };
 
   const location = useLocation();
+  const publishedDateLabel = formatArticleDate(articleMetadata?.created);
+  const updatedDateLabel = formatArticleDate(articleMetadata?.modified);
+  const showUpdatedDate = !!updatedDateLabel;
+  const showPublishedDate = !!publishedDateLabel && !showUpdatedDate;
+
   const downloadMarkdown = () => {
     if (!editor) return;
 
-    const markdown = editor.getMarkdown();
+    const markdown = serializeMarkdownDocument(editor.getMarkdown(), articleMetadata);
     const blob = new Blob([markdown], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -797,7 +819,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     <ErrorBoundary>
       <div className="w-full min-h-screen bg-white flex flex-col overflow-hidden">
         {/* Centered Search Bar - Fixed at top */}
-        <div className="flex-shrink-0 pt-12 pb-8 bg-white z-10">
+        <div className="flex-shrink-0 pt-12 bg-white z-10">
           <div className="max-w-2xl mx-auto px-4">
             <div className="flex items-center gap-4 border-b-2 border-gray-300 focus-within:border-[#F6821F] transition-colors pr-1">
               <div className="flex-1">
@@ -813,6 +835,22 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
                 <ArrowDownToLine className="w-5 h-5 flex-shrink-0" />
               </button>
             </div>
+
+            {(showPublishedDate || showUpdatedDate) && (
+              <div className="pt-2 text-right text-sm text-gray-500 font-sohne-regular pr-1">
+                {showPublishedDate && (
+                  <span>
+                    <span className="font-semibold text-gray-700">Published</span> {publishedDateLabel}
+                  </span>
+                )}
+                {showPublishedDate && showUpdatedDate && <span className="mx-2">•</span>}
+                {showUpdatedDate && (
+                  <span>
+                    <span className="font-semibold text-gray-700">Updated</span> {updatedDateLabel}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

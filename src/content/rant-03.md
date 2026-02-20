@@ -1,3 +1,7 @@
+---
+created: 2026-02-20
+---
+
 # Python Decorators
 
 [Decorators](https://www.geeksforgeeks.org/python/decorators-in-python/) are a relatively simple concept, but most people don't bother understanding what is going on under the hood - the average user knows the fancy `@`  does *something* to the target function, but *what exactly?* 
