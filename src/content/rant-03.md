@@ -19,7 +19,7 @@ Python executes module code top to bottom - it compiles source to bytecode first
 
 > The inner `wrapper` function object is created when `decorator(say_hello)` runs, but **not run yet**.
 
-`@decorator` transforms `say_hello` into `say_hello = decorator(say_hello)`. This returns the **function object** `wrapper` (NOT the function result), and from then on, `say_hello()` points to that `wrapper` function.
+`@decorator` transforms `say_hello` into `say_hello = decorator(say_hello)`. This returns the **function object** `wrapper` (NOT the function result), and from then on, `say_hello()` points to `wrapper`.
 
 > Though `say_hello` is no longer directly referenced, since the `wrapper` function references it, it will not be garbage collected till `wrapper` is also garbage collected.
 
