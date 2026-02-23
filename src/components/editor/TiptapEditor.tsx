@@ -53,6 +53,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
 }) => {
   const saveTimeoutRef = useRef<number | undefined>(undefined);
   const lastContentRef = useRef(initialContent);
+  const hasSyncedInitialContentRef = useRef(false);
   const [, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [showBackToTop, setShowBackToTop] = useState(false);
   const imageConversionInProgress = useRef(false);
@@ -355,7 +356,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
       // Add link icon extension
       LinkIconExtension,
     ],
-    content: initialContent,
+    content: '',
     contentType: 'markdown',
     editable,
     editorProps: {
@@ -397,12 +398,43 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     },
   });
 
+  useEffect(() => {
+    // Reset when a new editor instance is created (e.g. StrictMode remount or route remount).
+    hasSyncedInitialContentRef.current = false;
+  }, [editor]);
+
   // Update editor when content changes externally
   useEffect(() => {
-    if (editor && initialContent !== editor.getMarkdown()) {
-      editor.commands.setContent(initialContent, { contentType: 'markdown' });
-      lastContentRef.current = initialContent;
-    }
+    if (!editor) return;
+    let frameId: number | null = null;
+
+    const syncContent = () => {
+      if (editor.isDestroyed) return;
+
+      // Wait until React node views are mounted; setting markdown earlier can lose code block text.
+      if (!(editor as { contentComponent?: unknown }).contentComponent) {
+        frameId = window.requestAnimationFrame(syncContent);
+        return;
+      }
+
+      if (!hasSyncedInitialContentRef.current || initialContent !== editor.getMarkdown()) {
+        editor.commands.setContent(initialContent, {
+          contentType: 'markdown',
+          emitUpdate: false,
+        });
+        lastContentRef.current = initialContent;
+      }
+
+      hasSyncedInitialContentRef.current = true;
+    };
+
+    syncContent();
+
+    return () => {
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
+    };
   }, [initialContent, editor]);
 
   // Update editable state
