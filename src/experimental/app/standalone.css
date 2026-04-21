@@ -1,0 +1,221 @@
+@import '@/index.css';
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  background: #fff;
+}
+
+.simple-shell {
+  min-height: 100vh;
+  padding: 48px 16px;
+  display: flex;
+  justify-content: center;
+  background: #fff;
+}
+
+.simple-editor-frame {
+  width: 100%;
+  max-width: 680px;
+}
+
+.simple-markdown-editor {
+  position: relative;
+  width: 100%;
+}
+
+.simple-block {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  outline: none;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: #1F1F1F;
+  caret-color: #1F1F1F;
+}
+
+.simple-block[contenteditable='plaintext-only'],
+.simple-block[contenteditable='true'] {
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-user-modify: read-write-plaintext-only;
+  padding-inline: 2px;
+  margin-inline: -2px;
+}
+
+.simple-block[contenteditable='plaintext-only']:empty,
+.simple-block[contenteditable='true']:empty {
+  min-height: 1.7em;
+}
+
+.simple-block:empty::before {
+  content: attr(data-placeholder);
+  color: #aaa;
+  pointer-events: none;
+}
+
+.simple-block::selection,
+.simple-block *::selection {
+  background: #FFD7B5;
+  color: #1F1F1F;
+}
+
+.simple-block::-moz-selection,
+.simple-block *::-moz-selection {
+  background: #FFD7B5;
+  color: #1F1F1F;
+}
+
+.simple-block--heading-1 {
+  font-size: 48px;
+  font-weight: 500;
+  font-family: 'Source Serif Pro', Georgia, Cambria, 'Times New Roman', Times, serif;
+  line-height: 1.2;
+  color: #1F1F1F;
+}
+
+.simple-block--heading-2 {
+  font-size: 32px;
+  font-weight: 700;
+  font-family: 'Sohne Bold', system-ui, sans-serif;
+  line-height: 1.3;
+  color: #1F1F1F;
+}
+
+.simple-block--heading-3 {
+  font-size: 24px;
+  font-weight: 600;
+  font-family: 'Sohne Medium', system-ui, sans-serif;
+  line-height: 1.4;
+  color: #1F1F1F;
+}
+
+.simple-block--paragraph,
+.simple-block--unordered-list-item,
+.simple-block--ordered-list-item,
+.simple-block--blockquote,
+.simple-block--horizontal-rule {
+  font-size: 18px;
+  line-height: 1.7;
+  font-family: 'Sohne Regular', system-ui, sans-serif;
+  color: #1F1F1F;
+  min-height: 1em;
+}
+
+.simple-block--blockquote {
+  border-left: 3px solid #F38020;
+  padding: 0.75rem 1rem;
+  color: #7c7c7c;
+  background-color: #fafafa;
+}
+
+.simple-block--blockquote {
+  white-space: pre-wrap;
+}
+
+.simple-block a {
+  color: #1F1F1F;
+  text-decoration: underline;
+  text-decoration-color: #FFD7B5;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+  font-weight: 400;
+}
+
+.simple-block strong {
+  font-weight: 600;
+  font-family: 'Sohne Medium', system-ui, sans-serif;
+}
+
+.simple-block em {
+  font-style: italic;
+}
+
+.simple-block code {
+  background-color: #f5f5f5;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-family: Monaco, 'Courier New', monospace;
+}
+
+.simple-block--code code {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+.simple-block--code {
+  font-size: 14px;
+  line-height: 1.5;
+  font-family: Monaco, 'Courier New', monospace;
+  background-color: #f5f5f5;
+  padding: 1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  border: none;
+}
+
+.simple-block--horizontal-rule {
+  color: transparent;
+  letter-spacing: 0;
+  border-top: 1px solid #d1d5db;
+}
+
+.simple-block--horizontal-rule hr {
+  border: none;
+  border-top: 1px solid #d1d5db;
+  margin: 0;
+}
+
+.simple-block--unordered-list-item ul,
+.simple-block--ordered-list-item ol {
+  margin: 0;
+  padding-left: 1.5rem;
+  list-style-position: outside;
+  font-size: 18px;
+  line-height: 1.7;
+  font-family: 'Sohne Regular', system-ui, sans-serif;
+  color: #1F1F1F;
+}
+
+.simple-block--unordered-list-item ul {
+  list-style-type: disc;
+}
+
+.simple-block--ordered-list-item ol {
+  list-style-type: decimal;
+}
+
+.simple-block--unordered-list-item li,
+.simple-block--ordered-list-item li {
+  font-size: 18px;
+  line-height: 1.7;
+  margin-bottom: 0.5rem;
+  display: list-item;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+
+.simple-block--unordered-list-item li:last-child,
+.simple-block--ordered-list-item li:last-child {
+  margin-bottom: 0;
+}
+
+.simple-block--unordered-list-item ul,
+.simple-block--ordered-list-item ol {
+  pointer-events: none;
+}
+
+.simple-block--unordered-list-item li::marker,
+.simple-block--ordered-list-item li::marker {
+  color: #1F1F1F;
+}
