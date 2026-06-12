@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a portfolio website built with React, TypeScript, Vite, and Tailwind CSS v4. The site features an editable markdown-based content system where each section can be clicked to edit inline.
+This is a portfolio website built with React, TypeScript, Vite, and Tailwind CSS v4. It is a Kindle/e-reader style reading experience for blog-style articles: markdown files in `src/content/` are rendered read-only with an e-ink paper shader overlay. There is no in-browser editing.
 
 ## Common Commands
 
@@ -26,77 +26,53 @@ npm preview
 
 ### Routing and Content System
 
-The application uses a path-based routing system that maps routes to markdown files:
+All routes are handled by a single `ReaderPage` component:
 
-- **Landing Page**: `/` → loads `src/content/landing.md`
-- **Dynamic Routes**: All other routes use slug-based loading via `EditorPage`
-  - `/projects` → loads `src/content/projects.md`
-  - `/experience` → loads `src/content/experience.md`
-  - `/:slug` → loads `src/content/{slug}.md`
+- **Landing Page**: `/` → loads `src/content/00-landing.md`
+- **Dynamic Routes**: `/:slug` → loads `src/content/{slug}.md`
 
-All markdown files are stored in the `src/content/` directory and loaded dynamically using Vite's `?raw` import.
+Markdown files live in `src/content/` and are loaded dynamically using Vite's `?raw` import (see `src/lib/markdown.ts`). Files support optional YAML-ish frontmatter (`title`, `created`, `modified`) which drives the published/updated date display.
 
 ### Component Architecture
 
-**TiptapEditor**: The core rich text editor component that provides:
-- Full markdown support with WYSIWYG editing via TipTap
-- Syntax highlighting for code blocks using Lowlight
-- Image support with captions and click-to-edit functionality
-- Link rendering with internal/external link detection and navigation
-- Inline formatting (bold, italic, headings, blockquotes, lists, etc.)
-- Custom extensions:
-  - `CodeBlockWithUI`: Code blocks with language selection and copy functionality
-  - `ImageWithCaption`: Images with optional captions and markdown conversion
-  - `LinkIconExtension`: Visual indicators for links with click-to-select
-- Keyboard shortcuts for link/image conversion to markdown for editing
-- Auto-save functionality with debouncing
-- Download page as markdown feature
-- Search bar integration
+**ArticleView** (`src/components/reader/ArticleView.tsx`): The core read-only renderer:
+- Renders markdown via `react-markdown` with `remark-gfm` (GFM tables, task lists, strikethrough), `rehype-raw` (inline HTML in markdown), and `rehype-highlight` (syntax-highlighted code blocks)
+- Custom code blocks with language label and copy button
+- Link handling: internal links navigate via React Router, external links open in a new tab, `[text](!url)` hrefs (`!` prefix) render as download links
+- Images render as `<figure>` with captions from the title/alt text
+- Page chrome: published/updated dates at the top, a collapsed search icon fixed bottom-left (expands on hover/click, results open upward), and a back-to-top / view-source button fixed bottom-right. Both corner controls live outside the `.eink-page` filtered subtree (a `filter` ancestor would re-anchor `position: fixed`).
 
-**EditorPage**: Handles dynamic route-to-markdown mapping
-- Extracts slug from URL params
-- Loads markdown from `src/content/{slug}.md`
-- Falls back to default content if file not found
-- Manages loading and error states
+**EInkShader** (`src/components/reader/EInkShader.tsx`): A fixed fullscreen WebGL canvas overlay (pointer-events: none, `mix-blend-mode: multiply`) running a fragment shader that adds paper grain, fibres, mottling, and a soft vignette for the e-ink look. It renders once per resize (static grain, no animation loop) and silently skips if WebGL is unavailable.
 
-**LandingPage**: Dedicated component for the home page
-- Always loads `src/content/landing.md`
-- Uses same TiptapEditor for consistent editing experience
+**EInkDitherFilter** (`src/components/reader/EInkDitherFilter.tsx`): An SVG filter (`#eink-dither`) applied via the `.eink-page` class to the search header + article subtree in `ArticleView`. It adds a tiled 4x4 Bayer threshold pattern and posterizes each color channel to 6 levels — real ordered dithering like an e-ink panel, but color-preserving so accent colors and link highlights keep their UX meaning. Note: the fixed corner button is intentionally outside this subtree because a `filter` ancestor re-anchors `position: fixed` descendants.
+
+**ReaderPage** (`src/components/pages/ReaderPage.tsx`): Maps the route slug to a markdown file, manages loading/error states.
+
+**SearchBar** (`src/components/layout/SearchBar.tsx`): Searches all pages discovered via `import.meta.glob` in `src/store/pagesStore.ts` (zustand).
 
 ### Styling System
 
-Uses Tailwind CSS v4 with a custom typography system:
-- `typography.tsx` and `typography-variants.ts` define consistent text styles
-- Typography variants: title, h2, h3, body, caption
-- Path alias `@/` maps to `src/` directory
+Tailwind CSS v4 plus article styles in `src/index.css` under the `.reader-content` class (headings, links with slide-up highlight effect, code blocks, hljs syntax theme, tables, task lists). Article typography uses the Literata serif (Google Fonts) with justified, hyphenated body text; UI chrome uses Sohne. The e-ink palette uses CSS variables `--paper` and `--ink`. Path alias `@/` maps to `src/`.
 
 ### Build Configuration
 
 - Uses `rolldown-vite` (performance-optimized Vite fork)
-- React SWC plugin for fast refresh
-- Tailwind CSS Vite plugin for v4 support
+- Manual chunks: `react-vendor`, `markdown-vendor` (react-markdown/remark/rehype/highlight.js), `ui-vendor`
 - Path aliases configured in both `vite.config.ts` and `tsconfig.json`
 
 ## Content Management
 
-To add new pages:
-1. Create a markdown file in `src/content/` directory (e.g., `src/content/about.md`)
-2. The route is automatically handled by existing wildcard routes in `App.tsx`
-   - `/about` will automatically load `src/content/about.md`
-   - No code changes needed unless you want a custom page component
+To add new articles:
+1. Create a markdown file in `src/content/` (e.g., `src/content/rant-04.md`), optionally with frontmatter:
+   ```markdown
+   ---
+   created: 2026-01-30
+   modified: 2026-02-20
+   ---
+   # Title
+   ```
+2. The route `/rant-04` works automatically via the wildcard route in `App.tsx`, and the page appears in search automatically.
 
-Markdown files are imported as raw strings using Vite's `?raw` suffix and edited in-browser using the TiptapEditor.
-
-### TipTap Dependencies
-
-The project uses TipTap v3.18 for rich text editing:
-- Core packages: `@tiptap/react`, `@tiptap/starter-kit`, `@tiptap/core`
-- Extensions: `@tiptap/extension-link`, `@tiptap/extension-image`, `@tiptap/extension-placeholder`, `@tiptap/extension-typography`, `@tiptap/extension-code-block-lowlight`
-- Markdown support: `@tiptap/markdown` (official package with GitHub Flavored Markdown support)
-- Syntax highlighting: `lowlight` with common language support
-
-**Note**: The project uses the official `@tiptap/markdown` extension which provides:
-- Bidirectional markdown conversion (editor.getMarkdown() to serialize)
-- GitHub Flavored Markdown (GFM) support
-- Integration with the marked library
-- More reliable and actively maintained than the legacy tiptap-markdown package
+Special markdown conventions:
+- `###### text` (h6) renders as a small sans-serif gray "metadata subheading"; `**bold**` inside it renders in accent orange. The auto-generated byline under the title (`⎇ zanechee.dev · Published/Updated date`) uses the same format.
+- `[text](!url)` (`!` prefix) renders as a download link.

@@ -1,8 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Source+Serif+Pro:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+
+/* E-reader paper base tone; the shader overlay adds grain on top */
+:root {
+  --paper: #FAF7F0;
+  --ink: #1F1F1F;
+}
+
+html,
+body {
+  background-color: var(--paper);
+}
 
 /* Text Selection Highlight - Pastel Orange */
 ::selection {
@@ -13,6 +24,45 @@
 ::-moz-selection {
   background-color: #FFD7B5;
   color: #1F1F1F;
+}
+
+/* Dithered e-ink rendering for the article subtree (filter defined in EInkDitherFilter) */
+.eink-page {
+  filter: url(#eink-dither);
+}
+
+/* Search results scrollbar - thin ink line on paper, no track */
+.search-results {
+  scrollbar-width: thin;
+  scrollbar-color: #c9c4b6 transparent;
+}
+
+.search-results::-webkit-scrollbar {
+  width: 3px;
+}
+
+.search-results::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.search-results::-webkit-scrollbar-thumb {
+  background-color: #c9c4b6;
+  border-radius: 0;
+}
+
+.search-results::-webkit-scrollbar-thumb:hover {
+  background-color: #a8a294;
+}
+
+/* E-ink shader overlay canvas */
+.eink-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 100;
+  mix-blend-mode: multiply;
 }
 
 /* Sohne Font Declarations */
@@ -70,158 +120,158 @@
   font-family: 'Sohne Regular', system-ui, sans-serif !important;
 }
 
-/* Tiptap Editor Styles - Substack-inspired */
-.ProseMirror {
-  outline: none;
-  font-family: 'Sohne Regular', system-ui, sans-serif;
-  color: #1F1F1F;
-  line-height: 1.7;
+/* Reader Article Styles - e-reader book typography */
+.reader-content {
+  font-family: 'Literata', Georgia, 'Times New Roman', serif;
+  color: var(--ink);
+  line-height: 1.65;
 }
 
-/* Disable spell check underlines */
-.ProseMirror *::-webkit-spelling-error-underline,
-.ProseMirror *::-webkit-grammar-error-underline {
-  display: none !important;
-}
-
-.ProseMirror * {
-  -webkit-text-decoration-skip: none;
-  text-decoration-skip-ink: none;
-}
-
-.ProseMirror h1 {
-  font-size: 48px;
-  font-weight: 500;
-  font-family: 'Source Serif Pro', Georgia, Cambria, 'Times New Roman', Times, serif;
-  line-height: 1.2;
-  margin-top: 0;
-  margin-bottom: 1rem;
-  color: #1F1F1F;
-}
-
-.ProseMirror h2 {
-  font-size: 32px;
-  font-weight: 700;
-  font-family: 'Sohne Bold', system-ui, sans-serif;
-  line-height: 1.3;
-  margin-top: 2rem;
-  margin-bottom: 0.75rem;
-  color: #1F1F1F;
-}
-
-.ProseMirror h3 {
-  font-size: 24px;
+.reader-content h1 {
+  font-size: 38px;
   font-weight: 600;
-  font-family: 'Sohne Medium', system-ui, sans-serif;
+  font-family: 'Literata', Georgia, 'Times New Roman', serif;
+  line-height: 1.25;
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  color: var(--ink);
+}
+
+.reader-content h2 {
+  font-size: 27px;
+  font-weight: 600;
+  font-family: 'Literata', Georgia, 'Times New Roman', serif;
+  line-height: 1.3;
+  margin-top: 2.25rem;
+  margin-bottom: 0.75rem;
+  color: var(--ink);
+}
+
+.reader-content h3 {
+  font-size: 21px;
+  font-weight: 600;
+  font-family: 'Literata', Georgia, 'Times New Roman', serif;
   line-height: 1.4;
-  margin-top: 1.5rem;
+  margin-top: 1.75rem;
   margin-bottom: 0.5rem;
-  color: #1F1F1F;
+  color: var(--ink);
 }
 
-.ProseMirror p {
-  font-size: 18px;
+/* Metadata subheading: used for the byline under the title and available in
+   markdown as `###### ...`. Bold segments render in the accent orange. */
+.reader-content h6 {
+  font-family: 'Sohne Regular', system-ui, sans-serif;
+  font-size: 14px;
   font-weight: 400;
-  line-height: 1.7;
-  margin-bottom: 1.5rem;
-  color: #1F1F1F;
+  line-height: 1.6;
+  color: #6b7280;
+  margin-top: 0;
+  margin-bottom: 0.4rem;
+}
+
+/* A metadata line acts as a subtitle of whatever precedes it: tighten the
+   preceding element's bottom margin to a uniform 0.5rem gap, regardless of
+   whether it's a paragraph or a heading */
+.reader-content :is(p, h1, h2, h3, h4, h5):has(+ h6) {
+  margin-bottom: 0.5rem;
+}
+
+.reader-content h6 strong {
+  font-family: 'Sohne Medium', system-ui, sans-serif;
+  font-weight: 600;
+  color: #F38020;
+}
+
+.reader-content p {
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.65;
+  margin-bottom: 1.1rem;
+  color: var(--ink);
   min-height: 1em;
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
 }
 
-/* Preserve empty paragraphs for spacing */
-.ProseMirror p:empty {
-  min-height: 1.7em;
-}
-
-.ProseMirror a {
-  color: #1F1F1F;
+.reader-content a {
+  color: var(--ink);
   text-decoration: underline;
   text-decoration-color: #FFD7B5;
   text-decoration-thickness: 2px;
   text-underline-offset: 2px;
-  position: relative;
   font-weight: 400;
-  isolation: isolate;
+  /* Slide-up highlight as an animated background so it follows each line
+     fragment when the link wraps (a positioned ::before box does not) */
+  background-image: linear-gradient(#FFD7B5, #FFD7B5);
+  background-repeat: no-repeat;
+  background-size: 100% 0%;
+  background-position: 0 100%;
+  transition: background-size 0.3s ease;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
-/* Slide-up highlight effect */
-.ProseMirror a::before {
-  content: '';
-  position: absolute;
-  left: -2px;
-  right: -2px;
-  top: 0;
-  bottom: 0;
-  background-color: #FFD7B5;
-  z-index: -1;
-  transform: scaleY(0);
-  transform-origin: bottom;
-  transition: transform 0.3s ease;
+.reader-content a:hover {
+  background-size: 100% 100%;
 }
 
-/* Hide link icon */
-.ProseMirror .link-icon {
-  display: none;
+.reader-content a.download-link {
+  color: #F38020;
 }
 
-.ProseMirror a:hover::before {
-  transform: scaleY(1);
+.reader-content strong {
+  font-weight: 700;
 }
 
-.ProseMirror strong {
-  font-weight: 600;
-  font-family: 'Sohne Medium', system-ui, sans-serif;
-}
-
-.ProseMirror em {
+.reader-content em {
   font-style: italic;
 }
 
-.ProseMirror ul,
-.ProseMirror ol {
+.reader-content ul,
+.reader-content ol {
   margin: 1.5rem 0;
   padding-left: 1.5rem;
   list-style-position: outside;
 }
 
-.ProseMirror ul {
+.reader-content ul {
   list-style-type: disc;
 }
 
-.ProseMirror ol {
+.reader-content ol {
   list-style-type: decimal;
 }
 
-.ProseMirror li {
-  font-size: 18px;
-  line-height: 1.7;
+.reader-content li {
+  font-size: 17px;
+  line-height: 1.65;
   margin-bottom: 0.5rem;
   display: list-item;
 }
 
 /* Ensure nested paragraphs in list items don't break layout */
-.ProseMirror li p {
+.reader-content li p {
   margin-bottom: 0;
 }
 
-.ProseMirror code {
-  background-color: #f5f5f5;
+.reader-content code {
+  background-color: #efece4;
   padding: 0.2em 0.4em;
   border-radius: 3px;
   font-size: 0.9em;
   font-family: 'Monaco', 'Courier New', monospace;
 }
 
-.ProseMirror pre {
-  background-color: #f5f5f5;
-  padding: 1rem;
-  border-radius: 6px;
+.reader-content pre {
+  background-color: transparent;
+  padding: 0;
   overflow-x: auto;
-  margin: 1.5rem 0;
+  margin: 0;
   font-family: 'Monaco', 'Courier New', monospace;
 }
 
-.ProseMirror pre code {
+.reader-content pre code {
   background-color: transparent;
   padding: 0;
   font-size: 14px;
@@ -229,33 +279,27 @@
 }
 
 /* Code Block Component Styles */
-.ProseMirror .code-block-wrapper {
+.reader-content .code-block-wrapper {
   position: relative;
-  margin: 1rem 0;
+  margin: 1.5rem 0;
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid #e5e5e5;
-  background: #f5f5f5;
-}
-
-.ProseMirror .code-block-wrapper pre {
-  margin: 0;
-  background: transparent;
-  border-radius: 0;
+  border: 1px solid #ddd8cc;
+  background: #f3f0e8;
 }
 
 /* Header with language label and copy button */
-.ProseMirror .code-block-header {
+.reader-content .code-block-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 1rem;
-  background: #fafafa;
-  border-bottom: 1px solid #e5e5e5;
+  background: #f7f4ec;
+  border-bottom: 1px solid #ddd8cc;
 }
 
 /* Language label (top-left) */
-.ProseMirror .language-label {
+.reader-content .language-label {
   font-size: 0.75rem;
   font-weight: 600;
   color: #6b6b6b;
@@ -265,7 +309,7 @@
 }
 
 /* Copy button (top-right) */
-.ProseMirror .copy-button {
+.reader-content .copy-button {
   padding: 0.25rem;
   color: #6b6b6b;
   background: transparent;
@@ -278,13 +322,13 @@
   justify-content: center;
 }
 
-.ProseMirror .copy-button:hover {
+.reader-content .copy-button:hover {
   color: #1f1f1f;
   background: rgba(0, 0, 0, 0.05);
 }
 
 /* Syntax Highlighting Styles - VSCode Light Plus */
-.ProseMirror .hljs {
+.reader-content .hljs {
   display: block;
   overflow-x: auto;
   padding: 1rem;
@@ -298,270 +342,198 @@
 }
 
 /* Comments - green, italic */
-.ProseMirror .hljs-comment,
-.ProseMirror .hljs-quote {
+.reader-content .hljs-comment,
+.reader-content .hljs-quote {
   color: #008000;
   font-style: italic;
 }
 
 /* Keywords - blue, bold */
-.ProseMirror .hljs-keyword,
-.ProseMirror .hljs-selector-tag,
-.ProseMirror .hljs-literal,
-.ProseMirror .hljs-section {
+.reader-content .hljs-keyword,
+.reader-content .hljs-selector-tag,
+.reader-content .hljs-literal,
+.reader-content .hljs-section {
   color: #0000FF;
   font-weight: 600;
 }
 
 /* Strings - red/brown */
-.ProseMirror .hljs-string,
-.ProseMirror .hljs-template-variable,
-.ProseMirror .hljs-addition,
-.ProseMirror .hljs-meta-string {
+.reader-content .hljs-string,
+.reader-content .hljs-template-variable,
+.reader-content .hljs-addition,
+.reader-content .hljs-meta-string {
   color: #A31515;
 }
 
 /* Numbers - teal/green */
-.ProseMirror .hljs-number {
+.reader-content .hljs-number {
   color: #098658;
 }
 
 /* Functions - brown/gold */
-.ProseMirror .hljs-function,
-.ProseMirror .hljs-title.function_,
-.ProseMirror .hljs-title {
+.reader-content .hljs-function,
+.reader-content .hljs-title.function_,
+.reader-content .hljs-title {
   color: #795E26;
   font-weight: 500;
 }
 
 /* Types and built-ins - cyan/blue */
-.ProseMirror .hljs-type,
-.ProseMirror .hljs-built_in,
-.ProseMirror .hljs-selector-class,
-.ProseMirror .hljs-doctag {
+.reader-content .hljs-type,
+.reader-content .hljs-built_in,
+.reader-content .hljs-selector-class,
+.reader-content .hljs-doctag {
   color: #267F99;
 }
 
 /* Variables and attributes - dark blue */
-.ProseMirror .hljs-variable,
-.ProseMirror .hljs-attr,
-.ProseMirror .hljs-params,
-.ProseMirror .hljs-property,
-.ProseMirror .hljs-attribute {
+.reader-content .hljs-variable,
+.reader-content .hljs-attr,
+.reader-content .hljs-params,
+.reader-content .hljs-property,
+.reader-content .hljs-attribute {
   color: #001080;
 }
 
 /* Class names - cyan */
-.ProseMirror .hljs-title.class_,
-.ProseMirror .hljs-class,
-.ProseMirror .hljs-title.class {
+.reader-content .hljs-title.class_,
+.reader-content .hljs-class,
+.reader-content .hljs-title.class {
   color: #267F99;
 }
 
 /* Operators and punctuation - default foreground */
-.ProseMirror .hljs-operator,
-.ProseMirror .hljs-punctuation {
+.reader-content .hljs-operator,
+.reader-content .hljs-punctuation {
   color: #1f1f1f;
 }
 
 /* Tags in markup - blue */
-.ProseMirror .hljs-tag,
-.ProseMirror .hljs-name,
-.ProseMirror .hljs-selector-id {
+.reader-content .hljs-tag,
+.reader-content .hljs-name,
+.reader-content .hljs-selector-id {
   color: #0000FF;
 }
 
 /* Meta and annotations - gray */
-.ProseMirror .hljs-meta,
-.ProseMirror .hljs-meta-keyword {
+.reader-content .hljs-meta,
+.reader-content .hljs-meta-keyword {
   color: #808080;
 }
 
 /* Emphasis */
-.ProseMirror .hljs-emphasis {
+.reader-content .hljs-emphasis {
   font-style: italic;
 }
 
-.ProseMirror .hljs-strong {
+.reader-content .hljs-strong {
   font-weight: 700;
 }
 
 /* Regular expressions - dark red */
-.ProseMirror .hljs-regexp {
+.reader-content .hljs-regexp {
   color: #811F3F;
 }
 
 /* Symbols - blue */
-.ProseMirror .hljs-symbol,
-.ProseMirror .hljs-bullet,
-.ProseMirror .hljs-link {
+.reader-content .hljs-symbol,
+.reader-content .hljs-bullet,
+.reader-content .hljs-link {
   color: #0000FF;
 }
 
-.ProseMirror blockquote {
+.reader-content blockquote {
   border-left: 3px solid #F38020;
   padding: 0.75rem 1rem;
   margin: 1.5rem 0;
   color: #7c7c7c;
-  background-color: #fafafa;
+  background-color: #f3f0e8;
 }
 
-.ProseMirror blockquote p {
+.reader-content blockquote p {
   color: #7c7c7c;
   margin-bottom: 0;
 }
 
-.ProseMirror hr {
+.reader-content hr {
   border: none;
-  border-top: 1px solid #d1d5db;
+  border-top: 1px solid #d1cdc2;
   margin: 2rem 0;
 }
 
-.ProseMirror.is-editor-empty:first-child::before {
-  content: attr(data-placeholder);
-  float: left;
-  color: #aaa;
-  pointer-events: none;
-  height: 0;
-}
-
-/* Image Preview Styles */
-.ProseMirror .image-node {
-  margin: 1rem 0;
+/* Image with caption */
+.reader-content .image-node {
+  margin: 1.5rem 0;
   display: block;
 }
 
-.ProseMirror .image-node img {
+.reader-content .image-node img {
   max-width: 100%;
   height: auto;
-  cursor: pointer;
   display: block;
-  transition: border-right 0.2s;
-  border-right: 3px solid transparent;
+  mix-blend-mode: multiply;
 }
 
-/* Hover highlight - right border */
-.ProseMirror .image-node img:hover {
-  border-right: 3px solid #d1d5db;
-}
-
-/* Selected image indicator - right border */
-.ProseMirror .ProseMirror-selectednode .image-node img {
-  border-right: 3px solid #d1d5db;
-}
-
-/* Typography Classes for UnifiedMarkdownEditor */
-.typography-title {
-  font-size: 48px;
-  font-weight: 500;
-  font-family: 'Source Serif Pro', Georgia, Cambria, 'Times New Roman', Times, serif;
-  line-height: 1.2;
-  margin-top: 0;
-  margin-bottom: 1rem;
-  color: #1F1F1F;
-  display: block;
-}
-
-.typography-h2 {
-  font-size: 32px;
-  font-weight: 700;
-  font-family: 'Sohne Bold', system-ui, sans-serif;
-  line-height: 1.3;
-  margin-top: 2rem;
-  margin-bottom: 0.75rem;
-  color: #1F1F1F;
-  display: block;
-}
-
-.typography-h3 {
-  font-size: 24px;
-  font-weight: 600;
-  font-family: 'Sohne Medium', system-ui, sans-serif;
-  line-height: 1.4;
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
-  color: #1F1F1F;
-  display: block;
-}
-
-.typography-body {
-  font-size: 18px;
-  font-weight: 400;
-  font-family: 'Sohne Regular', system-ui, sans-serif;
-  line-height: 1.7;
-  margin-bottom: 1.5rem;
-  color: #1F1F1F;
-  display: block;
-}
-
-.typography-caption {
-  font-size: 18px;
-  font-weight: 400;
-  font-family: 'Sohne Regular', system-ui, sans-serif;
-  line-height: 1.7;
-  padding: 1rem 1rem;
-  margin: 1.5rem 0;
+.reader-content .image-node figcaption {
+  font-size: 14px;
   color: #7c7c7c;
-  background-color: #fafafa;
-  border-left: 3px solid #F38020;
-  display: block;
+  text-align: center;
+  margin-top: 0.5rem;
 }
 
-/* Colored Text Styles */
-.ProseMirror span[data-color="#FFD7B5"],
-.ProseMirror span[style*="color: rgb(255, 215, 181)"],
-.ProseMirror span[style*="color: #FFD7B5"],
-.ProseMirror span[data-color="#F38020"],
-.ProseMirror span[style*="color: rgb(243, 128, 32)"],
-.ProseMirror span[style*="color: #F38020"] {
-  color: #F38020 !important;
+/* Tables (GFM) */
+.reader-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 16px;
 }
 
-/* Task List / Checkbox Styles - Cloudflare style */
-.ProseMirror ul[data-type="taskList"] {
+.reader-content th,
+.reader-content td {
+  border: 1px solid #ddd8cc;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.reader-content th {
+  font-weight: 600;
+  background-color: #f3f0e8;
+}
+
+/* Task List / Checkbox Styles (GFM, read-only) */
+.reader-content ul:has(input[type="checkbox"]) {
   list-style: none;
   padding-left: 0;
   margin: 1.5rem 0;
 }
 
-.ProseMirror ul[data-type="taskList"] li {
+.reader-content li:has(> input[type="checkbox"]) {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 0.5rem;
 }
 
-.ProseMirror ul[data-type="taskList"] li > label {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  user-select: none;
-  margin: 0;
-}
-
-.ProseMirror ul[data-type="taskList"] li > label > input[type="checkbox"] {
+.reader-content input[type="checkbox"] {
   appearance: none;
   width: 18px;
   height: 18px;
-  border: 2px solid #1F1F1F;
+  border: 2px solid var(--ink);
   border-radius: 0;
-  cursor: pointer;
-  transition: all 0.1s ease;
+  pointer-events: none;
   position: relative;
-  background: white;
+  background: transparent;
   margin: 0;
+  flex-shrink: 0;
 }
 
-.ProseMirror ul[data-type="taskList"] li > label > input[type="checkbox"]:hover {
-  background-color: #f5f5f5;
-}
-
-.ProseMirror ul[data-type="taskList"] li > label > input[type="checkbox"]:checked {
+.reader-content input[type="checkbox"]:checked {
   background-color: #F38020;
   border-color: #F38020;
 }
 
-.ProseMirror ul[data-type="taskList"] li > label > input[type="checkbox"]:checked::after {
+.reader-content input[type="checkbox"]:checked::after {
   content: '';
   position: absolute;
   left: 50%;
@@ -571,14 +543,4 @@
   height: 10px;
   border: solid white;
   border-width: 0 2px 2px 0;
-}
-
-.ProseMirror ul[data-type="taskList"] li > div {
-  flex: 1;
-  font-size: 18px;
-  line-height: 1.7;
-}
-
-.ProseMirror ul[data-type="taskList"] li > div > p {
-  margin: 0;
 }

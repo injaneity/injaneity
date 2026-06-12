@@ -79,20 +79,6 @@ export function parseMarkdownDocument(rawMarkdown: string): ParsedMarkdownDocume
   };
 }
 
-export function serializeMarkdownDocument(content: string, metadata?: MarkdownArticleMetadata): string {
-  if (!metadata) return content;
-
-  const frontmatterLines = [
-    metadata.title ? `title: ${metadata.title}` : null,
-    metadata.created ? `created: ${metadata.created}` : null,
-    metadata.modified ? `modified: ${metadata.modified}` : null,
-  ].filter(Boolean) as string[];
-
-  if (frontmatterLines.length === 0) return content;
-
-  return `---\n${frontmatterLines.join('\n')}\n---\n\n${content.replace(/^\n+/, '')}`;
-}
-
 function parseDateValue(rawValue: string): Date | null {
   const isoDateMatch = rawValue.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (isoDateMatch) {
