@@ -90,7 +90,20 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ content, metadata }) =
                   <>
                     <h1>{children}</h1>
                     <h6 className="article-byline">
-                      <strong>⎇ zanechee.dev</strong>
+                      <strong
+                        role="link"
+                        tabIndex={0}
+                        className="byline-home cursor-pointer"
+                        onClick={() => navigate('/')}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            navigate('/');
+                          }
+                        }}
+                      >
+                        ⎇ zanechee.dev
+                      </strong>
                       {(showPublishedDate || showUpdatedDate) && (
                         <>
                           {' '}· {showPublishedDate && <>Published {publishedDateLabel}</>}

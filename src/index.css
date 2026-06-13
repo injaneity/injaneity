@@ -17,12 +17,12 @@ body {
 
 /* Text Selection Highlight - Pastel Orange */
 ::selection {
-  background-color: #FFD7B5;
+  background-color: #FBC089;
   color: #1F1F1F;
 }
 
 ::-moz-selection {
-  background-color: #FFD7B5;
+  background-color: #FBC089;
   color: #1F1F1F;
 }
 
@@ -197,13 +197,13 @@ body {
 .reader-content a {
   color: var(--ink);
   text-decoration: underline;
-  text-decoration-color: #FFD7B5;
+  text-decoration-color: #FBC089;
   text-decoration-thickness: 2px;
   text-underline-offset: 2px;
   font-weight: 400;
   /* Slide-up highlight as an animated background so it follows each line
      fragment when the link wraps (a positioned ::before box does not) */
-  background-image: linear-gradient(#FFD7B5, #FFD7B5);
+  background-image: linear-gradient(#FBC089, #FBC089);
   background-repeat: no-repeat;
   background-size: 100% 0%;
   background-position: 0 100%;
@@ -453,6 +453,7 @@ body {
 .reader-content blockquote p {
   color: #7c7c7c;
   margin-bottom: 0;
+  line-height: 2;
 }
 
 .reader-content hr {
