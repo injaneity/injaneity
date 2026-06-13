@@ -104,11 +104,24 @@ export function formatArticleDate(rawValue?: string): string | null {
   }).format(parsedDate);
 }
 
-export async function loadMarkdownBySlug(slug: string): Promise<ParsedMarkdownDocument | null> {
-  try {
-    const module = await import(`../content/${slug}.md?raw`);
-    return parseMarkdownDocument(module.default);
-  } catch {
-    return null;
-  }
+// Eagerly bundle all markdown content so there are no runtime dynamic
+// imports (a per-page chunk that can 404 after a redeploy is exactly the
+// "Failed to fetch dynamically imported module" failure we want to avoid).
+const contentModules = import.meta.glob<string>('../content/*.md', {
+  eager: true,
+  query: '?raw',
+  import: 'default',
+});
+
+const contentBySlug = new Map<string, string>(
+  Object.entries(contentModules).map(([path, raw]) => [
+    path.replace('../content/', '').replace('.md', ''),
+    raw,
+  ])
+);
+
+export function loadMarkdownBySlug(slug: string): ParsedMarkdownDocument | null {
+  const raw = contentBySlug.get(slug);
+  if (raw === undefined) return null;
+  return parseMarkdownDocument(raw);
 }
