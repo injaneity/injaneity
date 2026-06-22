@@ -12,7 +12,6 @@ import rehypeStringify from 'rehype-stringify';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const contentDir = path.join(root, 'src/content');
 const distDir = path.join(root, 'dist');
-const sourceUrl = 'https://github.com/injaneity/injaneity';
 const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n?/;
 
 function parseFrontmatter(raw) {
@@ -58,13 +57,6 @@ function countWords(content) {
     .replace(/\n+/g, ' ')
     .split(/\s+/)
     .filter(Boolean).length;
-}
-
-function textOf(node) {
-  if (!node) return '';
-  if (node.type === 'text') return node.value || '';
-  if (node.type === 'element' || node.type === 'root') return (node.children || []).map(textOf).join('');
-  return '';
 }
 
 function visit(node, fn, parent = null, index = -1) {
@@ -147,6 +139,7 @@ async function renderMarkdown(content, metadata) {
     .use(rehypeStringify)
     .process(content);
   return String(file)
+    .replace(/<p>(<figure class="image-node">[\s\S]*?<\/figure>)<\/p>/g, '$1')
     .replace(/<a href="!(.*?)"/g, '<a href="$1" download class="download-link"')
     .replace(/<a href="%21(.*?)"/g, '<a href="$1" download class="download-link"');
 }
@@ -159,7 +152,7 @@ function ditherFilter() {
 }
 
 function searchControl() {
-  return `<div class="corner-search"><div class="search-control" data-search><div class="search-panel" data-search-results hidden><div class="search-results" data-search-list></div></div><div class="search-row"><button class="icon-button" type="button" aria-label="Search pages" data-search-button><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg></button><div class="search-input-shell"><div class="search-input-wrap"><input class="search-input" type="text" placeholder="Search pages..." data-search-input><button class="clear-button" type="button" aria-label="Clear search" data-search-clear hidden><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div></div></div></div></div>`;
+  return `<div class="corner-search"><div class="search-control" data-search><div class="search-panel" data-search-results hidden><div class="search-results" data-search-list></div></div><div class="search-row"><button class="icon-button" type="button" aria-label="Search pages" data-search-button><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg></button><div class="search-input-shell"><div class="search-input-wrap"><input class="search-input" type="text" placeholder="Search pages..." data-search-input><button class="clear-button" type="button" aria-label="Clear search" data-search-clear><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div></div></div></div></div>`;
 }
 
 async function assetTags() {

@@ -272,11 +272,17 @@ button {
 }
 
 .reader-content code {
-  background-color: #efece4;
+  background-color: rgba(239, 236, 228, 0.58);
   padding: 0.2em 0.4em;
   border-radius: 3px;
   font-size: 0.9em;
   font-family: 'Monaco', 'Courier New', monospace;
+}
+
+.reader-content code::selection,
+.reader-content code *::selection {
+  background-color: #FBC089;
+  color: var(--ink);
 }
 
 .reader-content pre {
@@ -480,7 +486,7 @@ button {
 
 /* Image with caption */
 .reader-content .image-node {
-  margin: 1.5rem 0;
+  margin: 1rem 0;
   display: block;
 }
 
@@ -495,7 +501,7 @@ button {
   font-size: 14px;
   color: #7c7c7c;
   text-align: center;
-  margin-top: 0.5rem;
+  margin-top: 0.35rem;
 }
 
 /* Tables (GFM) */
@@ -600,7 +606,8 @@ button {
 }
 
 .search-control:hover .search-row,
-.search-control.is-open .search-row {
+.search-control:focus-within .search-row,
+.search-control:has(.search-input:not(:placeholder-shown)) .search-row {
   color: #F6821F;
 }
 
@@ -628,7 +635,9 @@ button {
   transition: max-width 0.3s ease, opacity 0.3s ease;
 }
 
-.search-control.is-open .search-input-shell {
+.search-control:hover .search-input-shell,
+.search-control:focus-within .search-input-shell,
+.search-control:has(.search-input:not(:placeholder-shown)) .search-input-shell {
   max-width: 20rem;
   opacity: 1;
 }
@@ -668,6 +677,10 @@ button {
 
 .clear-button:hover {
   color: #4b5563;
+}
+
+.search-input:placeholder-shown + .clear-button {
+  display: none;
 }
 
 .clear-button .icon {
