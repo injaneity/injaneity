@@ -1,9 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..700&display=swap');
-@import "tailwindcss";
-@import "tw-animate-css";
-
-@custom-variant dark (&:is(.dark *));
-
 /* E-reader paper base tone; the shader overlay adds grain on top */
 :root {
   --paper: #FAF7F0;
@@ -12,7 +7,64 @@
 
 html,
 body {
+  min-height: 100%;
+  margin: 0;
   background-color: var(--paper);
+}
+
+body {
+  color: var(--ink);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.site-shell {
+  min-height: 100vh;
+}
+
+.eink-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  filter: url(#eink-dither);
+}
+
+.article-frame {
+  flex: 1;
+  padding: 0 0.5rem;
+}
+
+.reader-content {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 5rem 1rem 2rem;
+}
+
+@media (min-width: 640px) {
+  .article-frame {
+    padding: 0 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .article-frame {
+    padding: 0 2rem;
+  }
 }
 
 /* Text Selection Highlight - Pastel Orange */
@@ -24,11 +76,6 @@ body {
 ::-moz-selection {
   background-color: #FBC089;
   color: #1F1F1F;
-}
-
-/* Dithered e-ink rendering for the article subtree (filter defined in EInkDitherFilter) */
-.eink-page {
-  filter: url(#eink-dither);
 }
 
 /* Search results scrollbar - thin ink line on paper, no track */
@@ -69,8 +116,7 @@ body {
 
 @font-face {
   font-family: 'Sohne Regular';
-  src: url('./assets/fonts/Sohne-Regular.woff2') format('woff2'),
-    url('./assets/fonts/Sohne-Regular.otf') format('opentype');
+  src: url('./assets/fonts/Sohne-Regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -78,46 +124,10 @@ body {
 
 @font-face {
   font-family: 'Sohne Medium';
-  src: url('./assets/fonts/Sohne-Medium.woff2') format('woff2'),
-    url('./assets/fonts/Sohne-Medium.otf') format('opentype');
+  src: url('./assets/fonts/Sohne-Medium.woff2') format('woff2');
   font-weight: 600;
   font-style: normal;
   font-display: swap;
-}
-
-@font-face {
-  font-family: 'Sohne Bold';
-  src: url('./assets/fonts/Sohne-Bold.woff2') format('woff2'),
-    url('./assets/fonts/Sohne-Bold.otf') format('opentype');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Sohne Black';
-  src: url('./assets/fonts/Sohne-Black.woff2') format('woff2'),
-    url('./assets/fonts/Sohne-Black.otf') format('opentype');
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* Font classes to ensure fonts are loading */
-.font-sohne-black {
-  font-family: 'Sohne Black', system-ui, sans-serif !important;
-}
-
-.font-sohne-bold {
-  font-family: 'Sohne Bold', system-ui, sans-serif !important;
-}
-
-.font-sohne-medium {
-  font-family: 'Sohne Medium', system-ui, sans-serif !important;
-}
-
-.font-sohne-regular {
-  font-family: 'Sohne Regular', system-ui, sans-serif !important;
 }
 
 /* Reader Article Styles - e-reader book typography */
@@ -186,12 +196,17 @@ body {
   font-size: 17px;
   font-weight: 400;
   line-height: 1.65;
+  margin-top: 0;
   margin-bottom: 1.1rem;
   color: var(--ink);
   min-height: 1em;
   text-align: justify;
   hyphens: auto;
   -webkit-hyphens: auto;
+}
+
+.reader-content .article-byline + br {
+  display: none;
 }
 
 .reader-content a {
@@ -246,6 +261,7 @@ body {
 .reader-content li {
   font-size: 17px;
   line-height: 1.65;
+  margin-top: 0;
   margin-bottom: 0.5rem;
   display: list-item;
 }
@@ -445,7 +461,7 @@ body {
 .reader-content blockquote {
   border-left: 3px solid #F38020;
   padding: 0.75rem 1rem;
-  margin: 1.5rem 0;
+  margin: 1.25rem 0;
   color: #7c7c7c;
   background-color: #f3f0e8;
 }
@@ -544,4 +560,230 @@ body {
   height: 10px;
   border: solid white;
   border-width: 0 2px 2px 0;
+}
+
+/* Fixed corner controls */
+.corner-search,
+.corner-action {
+  position: fixed;
+  bottom: 2rem;
+  z-index: 50;
+  font-family: 'Sohne Regular', system-ui, sans-serif;
+  font-size: 0.875rem;
+}
+
+.corner-search {
+  left: 2rem;
+}
+
+.corner-action {
+  right: 2rem;
+}
+
+.icon {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+.search-control {
+  position: relative;
+}
+
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #7c7c7c;
+  transition: color 0.3s ease;
+}
+
+.search-control:hover .search-row,
+.search-control.is-open .search-row {
+  color: #F6821F;
+}
+
+.icon-button,
+.clear-button,
+.copy-button,
+.corner-button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+.icon-button {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-input-shell {
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-width 0.3s ease, opacity 0.3s ease;
+}
+
+.search-control.is-open .search-input-shell {
+  max-width: 20rem;
+  opacity: 1;
+}
+
+.search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  box-sizing: border-box;
+  width: 12rem;
+  padding: 0.25rem 1.75rem 0.25rem 0;
+  border: 0;
+  border-bottom: 2px solid #d1d5db;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.875rem;
+  transition: border-color 0.3s ease;
+}
+
+.search-input::placeholder {
+  color: #9ca3af;
+}
+
+.search-input:focus {
+  border-bottom-color: #F6821F;
+}
+
+.clear-button {
+  position: absolute;
+  right: 0.25rem;
+  color: #9ca3af;
+}
+
+.clear-button:hover {
+  color: #4b5563;
+}
+
+.clear-button .icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.search-panel {
+  position: absolute;
+  bottom: 100%;
+  left: 1.75rem;
+  width: 14rem;
+  margin-bottom: 0.75rem;
+  z-index: 50;
+}
+
+.search-panel::before,
+.search-panel::after {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2.5rem;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.search-panel::before {
+  top: 0;
+  background: linear-gradient(to bottom, #FAF7F0, transparent);
+}
+
+.search-panel::after {
+  bottom: 0;
+  background: linear-gradient(to top, #FAF7F0, transparent);
+}
+
+.search-panel.can-scroll-up::before,
+.search-panel.can-scroll-down::after {
+  opacity: 1;
+}
+
+.search-results {
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.search-result {
+  display: block;
+  width: 100%;
+  padding: 0.625rem 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  font-family: 'Sohne Regular', system-ui, sans-serif;
+}
+
+.search-title,
+.search-path {
+  display: block;
+}
+
+.search-title {
+  color: #111827;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.search-result:hover .search-title {
+  color: #F6821F;
+}
+
+.search-path {
+  margin-top: 0.125rem;
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.corner-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #7c7c7c;
+  transition: color 0.3s ease;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.corner-button [data-corner-icon] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.25rem;
+}
+
+.corner-button:hover,
+.corner-button[data-mode='top'] {
+  color: #F6821F;
+}
+
+.corner-button[data-mode='top']:hover {
+  color: #d96d1a;
+}
+
+.corner-button[data-mode='source'] .corner-label {
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  white-space: nowrap;
+  transition: max-width 0.3s ease, opacity 0.3s ease;
+}
+
+.corner-button[data-mode='source']:hover .corner-label {
+  max-width: 14rem;
+  opacity: 1;
 }
