@@ -8,6 +8,9 @@ Inspired by [Mario Zechner's recomendations](https://mariozechner.at/recommended
 
 ***
 
+[**The coming loop**](https://lucumr.pocoo.org/2026/6/23/the-coming-loop/)
+###### 25 Jun, 2026
+
 [**Plasticity loss in continual learning**](https://www.zyphra.com/our-work/plasticity-loss-in-continual-learning)
 ###### 25 Jun, 2026
 
