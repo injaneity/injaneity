@@ -179,6 +179,10 @@ button {
   margin-bottom: 0.4rem;
 }
 
+.reader-content .article-byline {
+  margin-bottom: 2rem;
+}
+
 /* A metadata line acts as a subtitle of whatever precedes it: tighten the
    preceding element's bottom margin to a uniform 0.5rem gap, regardless of
    whether it's a paragraph or a heading */

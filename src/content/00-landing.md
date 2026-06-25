@@ -5,9 +5,6 @@ modified: 2026-06-13
 
 # Hi! I'm Zane Chee.
 
-<br>
-<br>
-
 I'm a [**software engineer**](/01-experience) & computer science student graduating in April 2027. Currently interning at [**JPMorganChase**](https://www.jpmorganchase.com/) while living a double life as a **computer use engineer** at [**cua.ai**](https://cua.ai/). Lately, I've been learning & writing about these topics:
 
 ***
