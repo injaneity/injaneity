@@ -9,9 +9,9 @@ I'm a [**software engineer**](/01-experience) & computer science student graduat
 
 ***
 
->1. [The future is HTML-first](/the-future-is-html)
->2. [The internals of Computer Use](https://x.com/injaneity/status/2051730711712063994) 
->3. [Switching to Codex (safely) 101](https://x.com/injaneity/status/2057664482198053067?s=20)
+>1. [Wait, what *exactly* is Computer Use?](/what-exactly-is-computer-use)
+>2. [The future is HTML-first](/the-future-is-html)
+>3. [The internals of Computer Use](https://x.com/injaneity/status/2051730711712063994)
 ***
 
 In my free time, I'm one of Singapore's **Codex Ambassadors** with [**OpenAI**](https://developers.openai.com/community/codex-ambassadors?ambassador=zane-chee#codex-ambassadors-globe), and maintain my own little open source computer use extension, [**pi-computer-use**](https://github.com/injaneity/pi-computer-use).
