@@ -39,6 +39,11 @@ button {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* Keep videos out of the filtered compositor: browsers can fail to play a
+   second hardware-decoded video when both share an SVG-filtered ancestor. */
+.reader-content > :not(video) {
   filter: url(#eink-dither);
 }
 
