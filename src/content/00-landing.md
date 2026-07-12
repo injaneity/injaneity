@@ -9,8 +9,8 @@ I'm a [**software engineer**](/01-experience) & computer science student graduat
 
 ***
 
->1. [Wait, what *exactly* is Computer Use?](/what-exactly-is-computer-use)
->2. [The future is HTML-first](/the-future-is-html)
+>1. [Batching & Parallelism in Computer Use](/batching-parallleism-computer-use)
+>2. [Wait, what *exactly* is Computer Use?](/what-exactly-is-computer-use)
 >3. [The internals of Computer Use](https://x.com/injaneity/status/2051730711712063994)
 ***
 
