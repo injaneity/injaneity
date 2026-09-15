@@ -1,5 +1,8 @@
 ---
 created: 2026-07-11
+category: Computer use
+description: How batching actions and parallel operations improve computer use, with lessons from building pi-computer-use and handling independent app state.
+image: /images/computer-use-batching-hero.jpg
 modified: 2026-07-11
 ---
 

@@ -1,5 +1,7 @@
 ---
 created: 2026-02-20
+category: Python
+description: How Python decorators wrap functions, return inner functions, and forward arguments with args and kwargs, explained through code examples.
 ---
 
 # Python Decorators
@@ -39,4 +41,4 @@ def is_greater(a, b):
 	return b > a
 ```
 
-For decorated functions with arguments and/or [keyword arguments](/rant-04.md), a generic pass-through wrapper usually uses `*args` and `**kwargs`. This forwards whatever was passed in so the underlying function still runs as expected.
+For decorated functions with arguments and/or keyword arguments, a generic pass-through wrapper usually uses `*args` and `**kwargs`. This forwards whatever was passed in so the underlying function still runs as expected.

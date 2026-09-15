@@ -1,5 +1,8 @@
 ---
 created: 2026-06-22
+category: Web
+description: Why Zane Chee moved his portfolio toward static HTML, simpler pages, and intentional design for sharing work and writing.
+image: /images/e-ink.jpg
 ---
 
 # The future is HTML-first

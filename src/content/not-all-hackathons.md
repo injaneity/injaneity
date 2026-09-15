@@ -1,5 +1,7 @@
 ---
 created: 2026-02-06
+category: Personal
+description: A reflection on hackathons, the pressure to collect awards, and how event design changes the freedom to build and solve interesting problems.
 modified: 2026-02-06
 ---
 

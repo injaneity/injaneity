@@ -1,5 +1,8 @@
 ---
 created: 2026-01-30
+category: Algorithms
+description: How Eytzinger layout stores a binary search tree in breadth-first order to improve cache locality, with implementation examples and tradeoffs.
+image: /images/eytzinger.png
 modified: 2026-02-20
 ---
 

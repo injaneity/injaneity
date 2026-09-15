@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 48" preserveAspectRatio="none">
+  <defs>
+    <filter id="wash" x="-4%" y="-22%" width="108%" height="144%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.18" numOctaves="3" seed="17" result="paper"/>
+      <feDisplacementMap in="SourceGraphic" in2="paper" scale="8" xChannelSelector="R" yChannelSelector="G" result="ragged"/>
+      <feGaussianBlur in="ragged" stdDeviation="0.45"/>
+    </filter>
+  </defs>
+  <g filter="url(#wash)" fill="#646860">
+    <path opacity="0.3" d="M-3 15C26 3 55 19 87 8c35-12 66 10 104 0 42-11 73 9 107-2l24 7-5 25c-34 12-68-5-105 5-42 11-75-8-112 1-38 9-71-8-103 2Z"/>
+    <path opacity="0.18" d="M-5 23C33 7 68 24 109 12c45-13 78 14 121 1 32-10 63 7 95-1l-8 31c-31-7-61 5-93-1-41-8-75 7-114-2-42-9-78 8-115-1Z"/>
+    <path opacity="0.11" d="M2 6c41 8 71-7 111 4 44 13 75-9 120 2 29 8 57-4 87 3l-2 20c-32 10-62-3-93 4-40 9-73-7-112 2-42 9-77-5-113 3Z"/>
+  </g>
+</svg>

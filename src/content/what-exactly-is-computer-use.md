@@ -1,5 +1,8 @@
 ---
 created: 2026-07-03
+category: Computer use
+description: An introduction to computer use agents: how models interact with a computer, how the tool layer works, and where to try computer use yourself.
+image: /images/computer-use-hero.jpg
 modified: 2026-07-03
 ---
 

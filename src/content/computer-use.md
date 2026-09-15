@@ -1,3 +1,8 @@
+---
+kind: page
+description: Zane Chee's computer use projects and contributions, including pi-computer-use, cua-driver, demos, and technical writeups.
+---
+
 # Computer Use
 
 This is a collection of my work related to computer use, separated into three sections: [pi-computer-use](https://github.com/injaneity/pi-computer-use) (my open-source computer use project), [cua](https://cua.ai) (a YC S25 computer use startup), and technical writeups on computer use.

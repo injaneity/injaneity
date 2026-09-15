@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&amp;display=swap" />
+    <title>writing desk · zanechee.dev</title>
+    <script type="module" src="/src/editor/entry.ts"></script>
+  </head>
+  <body class="editor-page">
+    <main class="owner-gate" id="owner-gate">
+      <a class="desk-home" href="/">⎇ zanechee.dev</a>
+      <h1>your writing desk</h1>
+      <p id="owner-message" role="status">checking your sign-in…</p>
+      <a id="owner-signin" href="/api/auth/login?returnTo=%2Feditor%2F" hidden>sign in with github</a>
+      <button type="button" id="owner-retry" hidden>try again</button>
+      <p class="owner-note">only injaneity can open the desk. your existing local drafts stay in this browser.</p>
+    </main>
+    <div class="editor-shell" data-mode="write" hidden>
+      <header class="desk-header">
+        <button type="button" id="open-contents" aria-haspopup="dialog" aria-controls="contents">contents</button>
+        <a class="desk-home" href="/">⎇ zanechee.dev</a>
+        <button type="button" id="export-draft">export .md</button>
+      </header>
+      <main class="desk-body">
+        <section class="manuscript-pane" aria-label="Markdown editor">
+          <div class="pane-caption"><label for="manuscript">manuscript</label><span>markdown</span></div>
+          <textarea id="manuscript" spellcheck="true" autocapitalize="sentences" aria-describedby="draft-notice" placeholder="# a new thought"></textarea>
+        </section>
+        <section class="preview-pane" aria-label="Reading preview" tabindex="0">
+          <div class="pane-caption"><span>on the page</span><span id="preview-state" role="status">preparing preview…</span></div>
+          <article class="reader-content" id="preview"></article>
+        </section>
+      </main>
+      <footer class="desk-footer">
+        <span id="save-state" role="status">opening your desk…</span>
+        <nav class="view-tools" aria-label="Editor view">
+          <button type="button" data-mode="write" aria-pressed="true">write</button><span aria-hidden="true">·</span>
+          <button type="button" data-mode="read" aria-pressed="false">read</button><span class="split-separator" aria-hidden="true">·</span>
+          <button type="button" data-mode="split" aria-pressed="false">side by side</button>
+        </nav>
+        <span id="word-count">0 words</span>
+        <span id="draft-notice" class="sr-only">saved in this browser only · export to keep a file · not published</span>
+      </footer>
+      <dialog id="contents" aria-labelledby="contents-title" aria-describedby="contents-note">
+        <div class="contents-header"><h1 id="contents-title">contents</h1><button type="button" id="close-contents" autofocus>back to page</button></div>
+        <p id="contents-note">your drafts live in this browser. nothing here is published.</p>
+        <div class="contents-actions"><button type="button" id="new-draft">start a new page</button><span aria-hidden="true">·</span><button type="button" id="import-draft">import markdown</button></div>
+        <div id="documents"></div>
+        <p class="contents-footnote">export a markdown file to keep a backup.</p>
+        <button type="button" id="owner-signout">sign out</button>
+      </dialog>
+      <input type="file" id="markdown-file" accept=".md,.markdown,text/markdown,text/plain" hidden />
+      <noscript>this editor needs javascript. your <a href="/writing/">published writing</a> does not.</noscript>
+    </div>
+    <noscript>sign-in needs javascript. <a href="/writing/">read the blog</a> without it.</noscript>
+    <!-- ink-filter -->
+  </body>
+</html>

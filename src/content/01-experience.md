@@ -1,5 +1,7 @@
 ---
 created: 2026-01-20
+kind: page
+description: Zane Chee's software engineering experience, including computer use at cua, work at JPMorganChase, SEA Group, and Hypotenuse AI.
 modified: 2026-06-13
 ---
 
@@ -35,7 +37,7 @@ Improving agent implementations for company-wide internal tooling as part of the
 Wearing many hats at a **YC20 e-commerce startup**. Learnt a lot about building for enterprise between the blood, sweat & tears - all in **TypeScript** & **Python**. Full stack development, product management & everything in between.
 
 
-### Co-Founder & Lead Developer, [Vinesweeper](/rant-04)
+### Co-Founder & Lead Developer, Vinesweeper
 ###### **Full-time** · May 2024 - May 2025
 Building an e-commerce competitor analysis solution for small and medium enterprises. Incubated as part of **SMU's Business Innovation Generator Jan 2025** cohort. A rudimentary prototype of an AI-native universal web scraper.
 

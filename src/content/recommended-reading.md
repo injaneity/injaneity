@@ -1,5 +1,7 @@
 ---
 created: 2026-06-25
+kind: resource
+description: Articles, websites, and videos Zane Chee has read or is reading, covering technology, art, and life.
 ---
 
 # What I've read / am reading
