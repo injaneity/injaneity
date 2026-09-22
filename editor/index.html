@@ -23,34 +23,33 @@
       <header class="desk-header">
         <button type="button" id="open-contents" aria-haspopup="dialog" aria-controls="contents">contents</button>
         <a class="desk-home" href="/">⎇ zanechee.dev</a>
-        <button type="button" id="export-draft">export .md</button>
+        <button type="button" id="export-draft" aria-label="Export markdown">export</button>
       </header>
       <main class="desk-body">
         <section class="manuscript-pane" aria-label="Markdown editor">
-          <div class="pane-caption"><label for="manuscript">manuscript</label><span>markdown</span></div>
-          <textarea id="manuscript" spellcheck="true" autocapitalize="sentences" aria-describedby="draft-notice" placeholder="# a new thought"></textarea>
+          <label class="sr-only" for="manuscript">markdown</label>
+          <textarea id="manuscript" spellcheck="true" autocapitalize="sentences" aria-describedby="draft-notice" placeholder="start writing…"></textarea>
         </section>
         <section class="preview-pane" aria-label="Reading preview" tabindex="0">
-          <div class="pane-caption"><span>on the page</span><span id="preview-state" role="status">preparing preview…</span></div>
+          <p id="preview-state" class="preview-status" role="status"></p>
           <article class="reader-content" id="preview"></article>
         </section>
       </main>
       <footer class="desk-footer">
-        <span id="save-state" role="status">opening your desk…</span>
+        <span id="save-state" role="status"></span>
         <nav class="view-tools" aria-label="Editor view">
           <button type="button" data-mode="write" aria-pressed="true">write</button><span aria-hidden="true">·</span>
-          <button type="button" data-mode="read" aria-pressed="false">read</button><span class="split-separator" aria-hidden="true">·</span>
-          <button type="button" data-mode="split" aria-pressed="false">side by side</button>
+          <button type="button" data-mode="read" aria-pressed="false">preview</button><span class="split-separator" aria-hidden="true">·</span>
+          <button type="button" data-mode="split" aria-pressed="false">split</button>
         </nav>
         <span id="word-count">0 words</span>
         <span id="draft-notice" class="sr-only">saved in this browser only · export to keep a file · not published</span>
       </footer>
       <dialog id="contents" aria-labelledby="contents-title" aria-describedby="contents-note">
-        <div class="contents-header"><h1 id="contents-title">contents</h1><button type="button" id="close-contents" autofocus>back to page</button></div>
-        <p id="contents-note">your drafts live in this browser. nothing here is published.</p>
-        <div class="contents-actions"><button type="button" id="new-draft">start a new page</button><span aria-hidden="true">·</span><button type="button" id="import-draft">import markdown</button></div>
+        <div class="contents-header"><h1 id="contents-title">contents</h1><button type="button" id="close-contents" autofocus>close</button></div>
+        <p id="contents-note">saved in this browser only · not published</p>
+        <div class="contents-actions"><button type="button" id="new-draft">new</button><span aria-hidden="true">·</span><button type="button" id="import-draft" aria-label="Import markdown">import</button></div>
         <div id="documents"></div>
-        <p class="contents-footnote">export a markdown file to keep a backup.</p>
         <button type="button" id="owner-signout">sign out</button>
       </dialog>
       <input type="file" id="markdown-file" accept=".md,.markdown,text/markdown,text/plain" hidden />

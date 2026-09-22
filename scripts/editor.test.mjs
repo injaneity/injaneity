@@ -74,6 +74,20 @@ test('editor copies retain source frontmatter instead of importing a rendered mi
   }
 });
 
+test('editor keeps accessible controls without repeated captions or starter copy', async () => {
+  const html = await readFile('dist/editor/index.html', 'utf8');
+  assert.match(html, /<label class="sr-only" for="manuscript">markdown<\/label>/);
+  assert.match(html, /aria-describedby="draft-notice"/);
+  assert.match(html, /saved in this browser only · not published/);
+  assert.match(html, /id="preview-state" class="preview-status" role="status"><\/p>/);
+  assert.doesNotMatch(html, /pane-caption|on the page|preparing preview|side by side|contents-footnote/);
+  const source = await readFile('src/editor/main.ts', 'utf8');
+  assert.doesNotMatch(source, /const welcome|the page is yours|live preview|min read|newDraft\('# untitled/);
+  assert.match(source, /source: ''/);
+  assert.match(source, /storageFailed = true/);
+  assert.match(source, /if \(restored\) \{ draft = restored/);
+});
+
 test('production preview worker renders without access to document', async () => {
   const filename = (await readdir('dist/assets')).find((name) => name.startsWith('preview.worker-'));
   const url = pathToFileURL(path.resolve('dist/assets', filename)).href;

@@ -17,31 +17,7 @@ const previewState = element('preview-state');
 const preview = element('preview');
 const fileInput = element<HTMLInputElement>('markdown-file');
 const shell = document.querySelector<HTMLElement>('.editor-shell')!;
-const welcome = `---
-description: A short description for search results and link previews.
-category: Notes
----
-
-# a little room to think
-
-Start with a sentence. The rest can follow.
-
-This is your writing desk: markdown on the left, the page your reader will see on the right. The same paper, type, and quiet [highlights](https://zanechee.dev/writing/).
-
-## keep the thought, lose the noise
-
-Write **something worth keeping**. Add a list, a link, or a piece of code when the thought needs it.
-
-- write without leaving the page
-- switch to read for an uncluttered preview
-- export your markdown when it is ready
-
-> A draft is a place to begin, not a promise to finish.
-
-Your drafts stay in this browser. Nothing here is published automatically.
-`;
-
-let draft: Draft = { id: crypto.randomUUID(), source: welcome, updated: new Date().toISOString() };
+let draft: Draft = { id: crypto.randomUUID(), source: '', updated: new Date().toISOString() };
 let savedValue: string | null = null;
 let dirty = false;
 let storageFailed = false;
@@ -108,7 +84,7 @@ function refreshMenu() {
   const drafts = draftOptions();
   if (!drafts.some((item) => item.id === draft.id)) drafts.unshift(draft);
   section('drafts', drafts.map((item) => ({ title: titleOf(item.source), value: `draft:${item.id}` })));
-  section('published · opens a local copy', published.map((page) => ({ title: page.title, value: `post:${page.slug}` })));
+  section('published pages', published.map((page) => ({ title: page.title, value: `post:${page.slug}` })));
 }
 
 element('open-contents').addEventListener('click', () => {
@@ -139,7 +115,7 @@ function save() {
     dirty = false;
     storageFailed = false;
     try { sessionStorage.setItem(activeKey, draft.id); } catch { /* Optional convenience only. */ }
-    saveState.textContent = forked ? 'saved a separate copy · another tab changed this draft' : 'saved in this browser';
+    saveState.textContent = forked ? 'saved a separate copy · another tab changed this draft' : 'saved locally';
     refreshMenu();
     return true;
   } catch {
@@ -160,10 +136,10 @@ function renderPreview() {
       clearTimeout(workerTimer);
       if (data.error) { previewState.textContent = data.error; return; }
       // The worker sanitizes raw HTML before applying trusted article transforms.
-      preview.innerHTML = data.html || '<p>the page is yours.</p>';
+      preview.innerHTML = data.html || '';
       preview.querySelectorAll('[data-copy-code]').forEach((button) => { button.textContent = 'copy'; });
-      element('word-count').textContent = `${data.words || 0} words · ${Math.max(1, Math.ceil((data.words || 0) / 220))} min read`;
-      previewState.textContent = 'live preview';
+      element('word-count').textContent = `${data.words || 0} words`;
+      previewState.textContent = '';
     };
     worker.onerror = () => {
       clearTimeout(workerTimer);
@@ -172,7 +148,7 @@ function renderPreview() {
       previewState.textContent = 'preview unavailable · keep writing or export your draft';
     };
   }
-  previewState.textContent = 'updating…';
+  previewState.textContent = '';
   worker.postMessage({ revision, source: input.value });
   clearTimeout(workerTimer);
   workerTimer = setTimeout(() => {
@@ -231,7 +207,7 @@ input.addEventListener('compositionend', () => { composing = false; changed(); }
 element('new-draft').addEventListener('click', () => {
   if (!canSwitch()) return;
   openRequest++;
-  newDraft('# untitled draft\n\n');
+  newDraft('');
   input.focus();
 });
 
@@ -263,7 +239,7 @@ async function openPublished(page: PublishedPage) {
   }
   const request = ++openRequest;
   const sourceRevision = revision;
-  saveState.textContent = 'opening a local copy…';
+  saveState.textContent = 'opening…';
   try {
     const response = await fetch(`/editor/posts/${encodeURIComponent(page.slug)}.md`);
     if (!response.ok) throw new Error('Missing source');
@@ -353,7 +329,7 @@ showDraft(draft, savedValue);
 const route = new URLSearchParams(location.search);
 const requestedPage = route.get('edit');
 if (route.get('create') === '1') {
-  newDraft('# untitled draft\n\n');
+  newDraft('');
   history.replaceState(null, '', '/editor/');
 }
 fetch('/editor/posts.json').then(async (response) => {
