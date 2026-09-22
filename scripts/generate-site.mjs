@@ -72,6 +72,14 @@ async function main() {
     });
   }));
   const assets = await assetTags();
+  await fs.writeFile(path.join(distDir, '404.html'), `<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow"><title>page not found · zanechee.dev</title>${assets}</head>
+<body><div class="site-shell"><div class="eink-page">
+<header class="reader-header"><p class="reader-header-metadata"><a href="/">⎇ zanechee.dev</a></p></header>
+<main class="article-frame"><article class="reader-content" data-reader-content><h1>page not found</h1><p>this page does not exist. <a href="/">back to the blog</a>.</p></article></main>
+<nav class="reader-footer" aria-label="Primary"><a href="/">about me</a><span aria-hidden="true">·</span><a href="/writing/">writing</a><span aria-hidden="true">·</span><a href="/01-experience/">experience</a></nav>
+</div></div>${ditherFilter()}</body></html>`);
   const editorDir = path.join(distDir, 'editor');
   await fs.mkdir(path.join(editorDir, 'posts'), { recursive: true });
   await fs.writeFile(path.join(editorDir, 'posts.json'), JSON.stringify(documents.map(({ slug, title }) => ({ slug, title }))));

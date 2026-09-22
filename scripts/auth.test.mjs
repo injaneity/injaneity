@@ -66,7 +66,7 @@ test('matching a username alone cannot grant owner access', async () => {
   for (const user of [{ id: 123, login: 'injaneity' }, { id: 44902825, login: 'someone-else' }]) {
     const { handler } = fixture(user);
     const response = await finish(handler, await begin(handler));
-    assert.equal(response.headers.location, '/editor/?auth=denied');
+    assert.equal(response.headers.location, '/signin/?auth=denied');
     assert.equal(JSON.parse((await call(handler, '/api/auth/session', { headers: { cookie: cookieHeader(response) } })).body).authenticated, false);
   }
 });
@@ -76,10 +76,10 @@ test('missing, mismatched, tampered and expired OAuth state is rejected before t
   const flow = await begin(handler);
   for (const [state, cookie] of [['wrong', flow.cookie], [flow.state, ''], [flow.state, flow.cookie + 'tampered']]) {
     const response = await call(handler, `/api/auth/callback?code=fixture-code&state=${state}`, { headers: { cookie } });
-    assert.equal(response.headers.location, '/editor/?auth=invalid');
+    assert.equal(response.headers.location, '/signin/?auth=invalid');
   }
   advance(601);
-  assert.equal((await finish(handler, flow)).headers.location, '/editor/?auth=invalid');
+  assert.equal((await finish(handler, flow)).headers.location, '/signin/?auth=invalid');
   assert.equal(requests.length, 0);
 });
 
@@ -117,6 +117,6 @@ test('logout requires a same-origin POST and clears both cookies', async () => {
 test('provider failures do not leak credentials or mint a session', async () => {
   const handler = createAuthHandler({ env, fetcher: async () => { throw new Error('secret fixture-token'); } });
   const response = await finish(handler, await begin(handler));
-  assert.equal(response.headers.location, '/editor/?auth=failed');
+  assert.equal(response.headers.location, '/signin/?auth=failed');
   assert.doesNotMatch(JSON.stringify(response), /fixture-token|test-client-secret|portfolio_session=/);
 });

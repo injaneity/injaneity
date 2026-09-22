@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <title>sign in · zanechee.dev</title>
+    <script type="module" src="/src/signin.ts"></script>
+  </head>
+  <body class="editor-page">
+    <main class="owner-gate">
+      <a class="desk-home" href="/">⎇ zanechee.dev</a>
+      <h1>your writing desk</h1>
+      <p id="signin-message" role="status">checking sign-in…</p>
+      <a id="signin-link" href="/api/auth/login" hidden>sign in with github</a>
+      <button id="signin-retry" type="button" hidden>try again</button>
+    </main>
+  </body>
+</html>

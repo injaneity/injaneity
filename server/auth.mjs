@@ -1,8 +1,19 @@
-import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
-
 const owner = { id: 44902825, login: 'injaneity' };
 const sessionSeconds = 8 * 60 * 60;
 const flowSeconds = 10 * 60;
+const encoder = new TextEncoder();
+
+function base64url(bytes) {
+  return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function decode(value) {
+  if (!/^[A-Za-z0-9_-]+$/.test(value)) throw new Error('invalid encoding');
+  return Uint8Array.from(atob(value.replace(/-/g, '+').replace(/_/g, '/')), (character) => character.charCodeAt(0));
+}
+function randomValue() { return base64url(crypto.getRandomValues(new Uint8Array(32))); }
+async function signingKey(config) {
+  return crypto.subtle.importKey('raw', encoder.encode(config.secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify']);
+}
 
 function configuration(env) {
   if (!env.GITHUB_CLIENT_ID || !env.GITHUB_CLIENT_SECRET || !env.AUTH_SECRET || env.AUTH_SECRET.length < 32 || !env.AUTH_ORIGIN) return null;
@@ -16,20 +27,20 @@ function configuration(env) {
   } catch { return null; }
 }
 
-function sign(value, config) {
-  const encoded = Buffer.from(JSON.stringify({ ...value, aud: config.origin })).toString('base64url');
-  return `${encoded}.${createHmac('sha256', config.secret).update(encoded).digest('base64url')}`;
+async function sign(value, config) {
+  const encoded = base64url(encoder.encode(JSON.stringify({ ...value, aud: config.origin })));
+  const signature = await crypto.subtle.sign('HMAC', await signingKey(config), encoder.encode(encoded));
+  return `${encoded}.${base64url(new Uint8Array(signature))}`;
 }
 
-function verify(value, kind, config, now) {
+async function verify(value, kind, config, now) {
   if (!value || value.length > 4096) return null;
   const [encoded, signature, extra] = value.split('.');
   if (!encoded || !signature || extra) return null;
-  const expected = createHmac('sha256', config.secret).update(encoded).digest();
-  const actual = Buffer.from(signature, 'base64url');
-  if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) return null;
   try {
-    const data = JSON.parse(Buffer.from(encoded, 'base64url').toString());
+    const actual = decode(signature);
+    if (actual.length !== 32 || !await crypto.subtle.verify('HMAC', await signingKey(config), actual, encoder.encode(encoded))) return null;
+    const data = JSON.parse(new TextDecoder().decode(decode(encoded)));
     if (data.kind !== kind || data.aud !== config.origin || !Number.isFinite(data.exp) || data.exp <= now) return null;
     return data;
   } catch { return null; }
@@ -64,7 +75,7 @@ function json(res, status, body) {
 function redirect(res, location) { res.statusCode = 303; res.setHeader('Location', location); res.end(); }
 
 // Shared by the local preview and the deployment adapter. No access tokens are stored.
-export function createAuthHandler({ env = process.env, fetcher = fetch, clock = () => Date.now() } = {}) {
+export function createAuthHandler({ env = {}, fetcher = fetch, clock = () => Date.now() } = {}) {
   return async function auth(req, res) {
     res.setHeader('Cache-Control', 'private, no-store, max-age=0');
     res.setHeader('Vary', 'Cookie');
@@ -73,7 +84,7 @@ export function createAuthHandler({ env = process.env, fetcher = fetch, clock = 
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
     const config = configuration(env);
     const url = new URL(req.url, config?.origin || 'http://localhost');
-    const action = url.pathname.replace(/\/$/, '').split('/').at(-1);
+    const action = url.pathname.match(/^\/api\/auth\/([a-z]+)\/?$/)?.[1];
     if (!['session', 'login', 'callback', 'logout'].includes(action)) return json(res, 404, { error: 'not found' });
     const method = action === 'logout' ? 'POST' : 'GET';
     if (req.method !== method) { res.setHeader('Allow', method); return json(res, 405, { error: 'method not allowed' }); }
@@ -82,7 +93,7 @@ export function createAuthHandler({ env = process.env, fetcher = fetch, clock = 
     if (String(req.headers.host || '').toLowerCase() !== config.host.toLowerCase()) return json(res, 403, { error: 'unexpected host' });
     const now = Math.floor(clock() / 1000);
     const jar = cookies(req);
-    const session = verify(jar[cookieName('session', config)], 'session', config, now);
+    const session = await verify(jar[cookieName('session', config)], 'session', config, now);
     const isOwner = session?.sub === owner.id && session?.login === owner.login;
 
     if (action === 'session') return json(res, 200, { authenticated: isOwner, configured: true,
@@ -98,23 +109,23 @@ export function createAuthHandler({ env = process.env, fetcher = fetch, clock = 
     if (action === 'login') {
       const next = safeReturnTo(url.searchParams.get('returnTo'), config.origin);
       if (isOwner) return redirect(res, next);
-      const state = randomBytes(32).toString('base64url');
-      const verifier = randomBytes(32).toString('base64url');
-      res.setHeader('Set-Cookie', cookie('oauth', sign({ kind: 'oauth', state, verifier, next, exp: now + flowSeconds }, config), flowSeconds, config));
+      const state = randomValue();
+      const verifier = randomValue();
+      res.setHeader('Set-Cookie', cookie('oauth', await sign({ kind: 'oauth', state, verifier, next, exp: now + flowSeconds }, config), flowSeconds, config));
       const github = new URL('https://github.com/login/oauth/authorize');
       github.search = new URLSearchParams({ client_id: config.clientId, redirect_uri: callback,
-        scope: '', state, code_challenge: createHash('sha256').update(verifier).digest('base64url'),
+        scope: '', state, code_challenge: base64url(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(verifier)))),
         code_challenge_method: 'S256', allow_signup: 'false' }).toString();
       return redirect(res, github.href);
     }
 
     res.setHeader('Set-Cookie', cookie('oauth', '', 0, config));
-    const flow = verify(jar[cookieName('oauth', config)], 'oauth', config, now);
+    const flow = await verify(jar[cookieName('oauth', config)], 'oauth', config, now);
     const state = url.searchParams.get('state');
     const code = url.searchParams.get('code');
-    if (!flow || typeof state !== 'string' || state !== flow.state || typeof flow.verifier !== 'string') return redirect(res, '/editor/?auth=invalid');
-    if (url.searchParams.has('error')) return redirect(res, '/editor/?auth=cancelled');
-    if (!code || code.length > 512) return redirect(res, '/editor/?auth=invalid');
+    if (!flow || typeof state !== 'string' || state !== flow.state || typeof flow.verifier !== 'string') return redirect(res, '/signin/?auth=invalid');
+    if (url.searchParams.has('error')) return redirect(res, '/signin/?auth=cancelled');
+    if (!code || code.length > 512) return redirect(res, '/signin/?auth=invalid');
     try {
       const exchange = await fetcher('https://github.com/login/oauth/access_token', {
         method: 'POST', headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -132,14 +143,14 @@ export function createAuthHandler({ env = process.env, fetcher = fetch, clock = 
       const user = await profile.json();
       if (user.id !== owner.id || String(user.login).toLowerCase() !== owner.login) {
         res.setHeader('Set-Cookie', [cookie('oauth', '', 0, config), cookie('session', '', 0, config)]);
-        return redirect(res, '/editor/?auth=denied');
+        return redirect(res, '/signin/?auth=denied');
       }
-      res.setHeader('Set-Cookie', [cookie('oauth', '', 0, config), cookie('session', sign({ kind: 'session', sub: owner.id,
+      res.setHeader('Set-Cookie', [cookie('oauth', '', 0, config), cookie('session', await sign({ kind: 'session', sub: owner.id,
         login: owner.login, exp: now + sessionSeconds }, config), sessionSeconds, config)]);
       return redirect(res, safeReturnTo(flow.next, config.origin));
     } catch {
       // Never expose codes, tokens, provider response bodies, or secrets in errors.
-      return redirect(res, '/editor/?auth=failed');
+      return redirect(res, '/signin/?auth=failed');
     }
   };
 }
