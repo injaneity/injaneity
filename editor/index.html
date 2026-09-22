@@ -15,45 +15,25 @@
   <body class="editor-page">
     <main class="owner-gate" id="owner-gate">
       <a class="desk-home" href="/">⎇ zanechee.dev</a>
-      <h1>your writing desk</h1>
-      <p id="owner-message" role="status">checking your sign-in…</p>
+      <p id="owner-message" role="status">opening…</p>
       <button type="button" id="owner-retry" hidden>try again</button>
     </main>
-    <div class="editor-shell" data-mode="write" hidden>
+    <div class="editor-shell" hidden>
       <header class="desk-header">
-        <button type="button" id="open-contents" aria-haspopup="dialog" aria-controls="contents">contents</button>
         <a class="desk-home" href="/">⎇ zanechee.dev</a>
-        <button type="button" id="export-draft" aria-label="Export markdown">export</button>
+        <button type="button" id="open-contents" aria-label="Editor actions" aria-keyshortcuts="Meta+k Control+k" aria-haspopup="dialog" aria-controls="contents">···</button>
       </header>
-      <main class="desk-body">
-        <section class="manuscript-pane" aria-label="Markdown editor">
-          <label class="sr-only" for="manuscript">markdown</label>
-          <textarea id="manuscript" spellcheck="true" autocapitalize="sentences" aria-describedby="draft-notice" placeholder="start writing…"></textarea>
-        </section>
-        <section class="preview-pane" aria-label="Reading preview" tabindex="0">
-          <p id="preview-state" class="preview-status" role="status"></p>
-          <article class="reader-content" id="preview"></article>
-        </section>
-      </main>
-      <footer class="desk-footer">
-        <span id="save-state" role="status"></span>
-        <nav class="view-tools" aria-label="Editor view">
-          <button type="button" data-mode="write" aria-pressed="true">write</button><span aria-hidden="true">·</span>
-          <button type="button" data-mode="read" aria-pressed="false">preview</button><span class="split-separator" aria-hidden="true">·</span>
-          <button type="button" data-mode="split" aria-pressed="false">split</button>
-        </nav>
-        <span id="word-count">0 words</span>
-        <span id="draft-notice" class="sr-only">saved in this browser only · export to keep a file · not published</span>
-      </footer>
-      <dialog id="contents" aria-labelledby="contents-title" aria-describedby="contents-note">
-        <div class="contents-header"><h1 id="contents-title">contents</h1><button type="button" id="close-contents" autofocus>close</button></div>
-        <p id="contents-note">saved in this browser only · not published</p>
-        <div class="contents-actions"><button type="button" id="new-draft">new</button><span aria-hidden="true">·</span><button type="button" id="import-draft" aria-label="Import markdown">import</button></div>
+      <main class="desk-body" aria-label="Writing page"><div id="manuscript"></div></main>
+      <p id="editor-error" role="alert" hidden></p>
+      <dialog id="contents" aria-labelledby="contents-title">
+        <div class="contents-header"><h1 id="contents-title">drafts</h1><button type="button" id="close-contents" aria-label="Close">×</button></div>
+        <p id="contents-note">drafts stay in this browser until downloaded · not published</p>
+        <div class="contents-actions"><button type="button" id="new-draft">new</button><button type="button" id="import-draft">import</button><button type="button" id="export-draft">download markdown</button></div>
         <div id="documents"></div>
+        <details class="page-details"><summary>page details</summary><label class="sr-only" for="metadata">markdown frontmatter</label><textarea id="metadata" spellcheck="false" aria-label="markdown frontmatter"></textarea></details>
         <button type="button" id="owner-signout">sign out</button>
       </dialog>
       <input type="file" id="markdown-file" accept=".md,.markdown,text/markdown,text/plain" hidden />
-      <noscript>this editor needs javascript. your <a href="/writing/">published writing</a> does not.</noscript>
     </div>
     <noscript>sign-in needs javascript. <a href="/writing/">read the blog</a> without it.</noscript>
     <!-- ink-filter -->

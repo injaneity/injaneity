@@ -1,13 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
-import { Worker } from 'node:worker_threads';
-import { pathToFileURL } from 'node:url';
-import path from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { parseFrontmatter, renderMarkdown } from '../src/lib/markdown.mjs';
 
-test('editor uses the article renderer for headings, links, code, lists and frontmatter', async () => {
+test('article renderer supports headings, links, code, lists and frontmatter', async () => {
   const { content, metadata } = parseFrontmatter('---\ncreated: 2026-09-15\n---\n# A draft\n\n[writing](/writing)\n\n- one\n- two\n\n```js\nconst value = 1;\n```');
   assert.equal(metadata.created, '2026-09-15');
   const html = await renderMarkdown(content, metadata, { safe: true });
@@ -51,7 +48,7 @@ test('editor is noindex and does not add editor code to public pages', async () 
   const reader = await readFile('dist/index.html', 'utf8');
   const editor = await readFile('dist/editor/index.html', 'utf8');
   assert.match(editor, /noindex, nofollow/);
-  assert.match(editor, /data-mode="write"/);
+  assert.match(editor, /id="manuscript"/);
   assert.match(editor, /<dialog id="contents" aria-labelledby="contents-title"/);
   assert.doesNotMatch(editor, /<select\b/);
   assert.match(editor, /editor-.*\.js/);
@@ -62,9 +59,9 @@ test('editor is noindex and does not add editor code to public pages', async () 
   let bytes = 0;
   for (const [, url] of [...scripts, ...preloads]) bytes += gzipSync(await readFile(`dist${url}`)).length;
   assert.ok(bytes < 2500, `reader scripts grew to ${bytes} bytes gzip`);
-  const worker = (await readdir('dist/assets')).find((name) => name.startsWith('preview.worker-'));
-  const workerSize = gzipSync(await readFile(`dist/assets/${worker}`)).length;
-  assert.ok(workerSize < 75_000, `base preview worker grew to ${workerSize} bytes gzip`);
+  const controller = (await readdir('dist/assets')).find((name) => /^main-.*\.js$/.test(name));
+  const editorSize = gzipSync(await readFile(`dist/assets/${controller}`)).length;
+  assert.ok(editorSize < 125_000, `live editor grew to ${editorSize} bytes gzip`);
 });
 
 test('editor copies retain source frontmatter instead of importing a rendered mirror', async () => {
@@ -76,35 +73,14 @@ test('editor copies retain source frontmatter instead of importing a rendered mi
 
 test('editor keeps accessible controls without repeated captions or starter copy', async () => {
   const html = await readFile('dist/editor/index.html', 'utf8');
-  assert.match(html, /<label class="sr-only" for="manuscript">markdown<\/label>/);
-  assert.match(html, /aria-describedby="draft-notice"/);
-  assert.match(html, /saved in this browser only · not published/);
-  assert.match(html, /id="preview-state" class="preview-status" role="status"><\/p>/);
-  assert.doesNotMatch(html, /pane-caption|on the page|preparing preview|side by side|contents-footnote/);
+  assert.match(html, /aria-label="Editor actions"/);
+  assert.match(html, /id="editor-error" role="alert" hidden/);
+  assert.doesNotMatch(html, /pane-caption|preparing preview|side by side|contents-footnote|<footer|data-mode|preview-state|save-state/);
+  const surface = html.replace(/<dialog\b[\s\S]*?<\/dialog>/, '');
+  assert.doesNotMatch(surface, />contents<|>export<|saved locally|download markdown|not published/);
   const source = await readFile('src/editor/main.ts', 'utf8');
   assert.doesNotMatch(source, /const welcome|the page is yours|live preview|min read|newDraft\('# untitled/);
   assert.match(source, /source: ''/);
   assert.match(source, /storageFailed = true/);
-  assert.match(source, /if \(restored\) \{ draft = restored/);
-});
-
-test('production preview worker renders without access to document', async () => {
-  const filename = (await readdir('dist/assets')).find((name) => name.startsWith('preview.worker-'));
-  const url = pathToFileURL(path.resolve('dist/assets', filename)).href;
-  const worker = new Worker(`
-    const { parentPort } = require('node:worker_threads');
-    global.self = { postMessage: data => parentPort.postMessage(data) };
-    import(${JSON.stringify(url)}).then(() => parentPort.on('message', data => self.onmessage({ data })));
-  `, { eval: true });
-  try {
-    const result = await new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error('worker timed out')), 8000);
-      worker.once('error', (error) => { clearTimeout(timer); reject(error); });
-      worker.once('message', (data) => { clearTimeout(timer); resolve(data); });
-      worker.postMessage({ revision: 9, source: '# worker &amp; paper\n\nA **live** preview.' });
-    });
-    assert.equal(result.revision, 9);
-    assert.match(result.html, /worker &#x26; paper/);
-    assert.match(result.html, /<strong>live<\/strong>/);
-  } finally { await worker.terminate(); }
+  assert.match(source, /if \(restored && route.get\('create'\) !== '1'\)/);
 });

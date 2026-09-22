@@ -9,10 +9,17 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc -b",
-    "test:site": "node --test scripts/site-metadata.test.mjs scripts/editor.test.mjs scripts/auth.test.mjs scripts/pages-auth.test.mjs scripts/auth-runtime.test.mjs"
+    "test:site": "node --test scripts/site-metadata.test.mjs scripts/editor.test.mjs scripts/auth.test.mjs scripts/pages-auth.test.mjs scripts/auth-runtime.test.mjs",
+    "test:editor": "node --test scripts/editor-browser.test.mjs"
   },
   "devDependencies": {
+    "@codemirror/commands": "^6.11.1",
+    "@codemirror/lang-markdown": "^6.5.2",
+    "@codemirror/language": "^6.12.4",
+    "@codemirror/state": "^6.7.6",
+    "@codemirror/view": "^6.43.13",
     "@eslint/js": "^9.36.0",
+    "@playwright/test": "^1.63.0",
     "eslint": "^9.36.0",
     "globals": "^16.4.0",
     "rehype-highlight": "^7.0.2",
