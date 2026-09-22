@@ -134,10 +134,12 @@ export function createAuthHandler({ env = {}, fetcher = fetch, clock = () => Dat
       const exchange = await fetcher('https://github.com/login/oauth/access_token', {
         method: 'POST', headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ client_id: config.clientId, client_secret: config.clientSecret, code,
-          redirect_uri: callback, code_verifier: flow.verifier }), signal: AbortSignal.timeout(10_000), redirect: 'error',
+          redirect_uri: callback, code_verifier: flow.verifier }), signal: AbortSignal.timeout(10_000), redirect: 'manual',
       });
       status = exchange.status;
       stage = 'token-response';
+      // Workers does not support redirect: 'error'. Manual mode plus this check
+      // rejects redirects without forwarding the client secret or access token.
       if (!exchange.ok) throw new Error('exchange failed');
       const token = await exchange.json();
       const knownErrors = ['incorrect_client_credentials', 'redirect_uri_mismatch', 'bad_verification_code', 'unverified_user_email'];
@@ -147,7 +149,7 @@ export function createAuthHandler({ env = {}, fetcher = fetch, clock = () => Dat
       status = undefined;
       const profile = await fetcher('https://api.github.com/user', {
         headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${token.access_token}`,
-          'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'zanechee-portfolio' }, signal: AbortSignal.timeout(10_000), redirect: 'error',
+          'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'zanechee-portfolio' }, signal: AbortSignal.timeout(10_000), redirect: 'manual',
       });
       status = profile.status;
       stage = 'profile-response';

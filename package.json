@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc -b",
-    "test:site": "node --test scripts/site-metadata.test.mjs scripts/editor.test.mjs scripts/auth.test.mjs scripts/pages-auth.test.mjs"
+    "test:site": "node --test scripts/site-metadata.test.mjs scripts/editor.test.mjs scripts/auth.test.mjs scripts/pages-auth.test.mjs scripts/auth-runtime.test.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
