@@ -115,8 +115,26 @@ test('logout requires a same-origin POST and clears both cookies', async () => {
 });
 
 test('provider failures do not leak credentials or mint a session', async () => {
-  const handler = createAuthHandler({ env, fetcher: async () => { throw new Error('secret fixture-token'); } });
+  const failures = [];
+  const handler = createAuthHandler({ env, reportFailure: failure => failures.push(failure), fetcher: async () => { throw new Error('secret fixture-token'); } });
   const response = await finish(handler, await begin(handler));
   assert.equal(response.headers.location, '/signin/?auth=failed');
   assert.doesNotMatch(JSON.stringify(response), /fixture-token|test-client-secret|portfolio_session=/);
+  assert.deepEqual(failures, [{ stage: 'token-request', category: 'Error' }]);
+});
+
+test('auth diagnostics report only fixed stages, statuses and allowlisted provider errors', async () => {
+  for (const [body, expected] of [
+    [{ error: 'incorrect_client_credentials', error_description: 'secret fixture-token' }, 'incorrect_client_credentials'],
+    [{ error: 'secret fixture-token', error_description: 'test-client-secret' }, undefined],
+  ]) {
+    const failures = [];
+    const handler = createAuthHandler({ env, reportFailure: failure => failures.push(failure),
+      fetcher: async () => Response.json(body) });
+    await finish(handler, await begin(handler));
+    assert.equal(failures[0].stage, 'token-response');
+    assert.equal(failures[0].status, 200);
+    assert.equal(failures[0].providerError, expected);
+    assert.doesNotMatch(JSON.stringify(failures), /fixture-token|test-client-secret/);
+  }
 });

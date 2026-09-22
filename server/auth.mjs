@@ -75,7 +75,8 @@ function json(res, status, body) {
 function redirect(res, location) { res.statusCode = 303; res.setHeader('Location', location); res.end(); }
 
 // Shared by the local preview and the deployment adapter. No access tokens are stored.
-export function createAuthHandler({ env = {}, fetcher = fetch, clock = () => Date.now() } = {}) {
+export function createAuthHandler({ env = {}, fetcher = fetch, clock = () => Date.now(),
+  reportFailure = (failure) => console.warn('owner-auth-failure', JSON.stringify(failure)) } = {}) {
   return async function auth(req, res) {
     res.setHeader('Cache-Control', 'private, no-store, max-age=0');
     res.setHeader('Vary', 'Cookie');
@@ -126,30 +127,45 @@ export function createAuthHandler({ env = {}, fetcher = fetch, clock = () => Dat
     if (!flow || typeof state !== 'string' || state !== flow.state || typeof flow.verifier !== 'string') return redirect(res, '/signin/?auth=invalid');
     if (url.searchParams.has('error')) return redirect(res, '/signin/?auth=cancelled');
     if (!code || code.length > 512) return redirect(res, '/signin/?auth=invalid');
+    let stage = 'token-request';
+    let status;
+    let providerError;
     try {
       const exchange = await fetcher('https://github.com/login/oauth/access_token', {
         method: 'POST', headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ client_id: config.clientId, client_secret: config.clientSecret, code,
           redirect_uri: callback, code_verifier: flow.verifier }), signal: AbortSignal.timeout(10_000), redirect: 'error',
       });
+      status = exchange.status;
+      stage = 'token-response';
       if (!exchange.ok) throw new Error('exchange failed');
       const token = await exchange.json();
+      const knownErrors = ['incorrect_client_credentials', 'redirect_uri_mismatch', 'bad_verification_code', 'unverified_user_email'];
+      if (knownErrors.includes(token.error)) providerError = token.error;
       if (typeof token.access_token !== 'string' || !token.access_token || token.error) throw new Error('no access token');
+      stage = 'profile-request';
+      status = undefined;
       const profile = await fetcher('https://api.github.com/user', {
         headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${token.access_token}`,
           'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'zanechee-portfolio' }, signal: AbortSignal.timeout(10_000), redirect: 'error',
       });
+      status = profile.status;
+      stage = 'profile-response';
       if (!profile.ok) throw new Error('profile failed');
       const user = await profile.json();
       if (user.id !== owner.id || String(user.login).toLowerCase() !== owner.login) {
         res.setHeader('Set-Cookie', [cookie('oauth', '', 0, config), cookie('session', '', 0, config)]);
         return redirect(res, '/signin/?auth=denied');
       }
+      stage = 'session-signing';
+      status = undefined;
       res.setHeader('Set-Cookie', [cookie('oauth', '', 0, config), cookie('session', await sign({ kind: 'session', sub: owner.id,
         login: owner.login, exp: now + sessionSeconds }, config), sessionSeconds, config)]);
       return redirect(res, safeReturnTo(flow.next, config.origin));
-    } catch {
+    } catch (error) {
       // Never expose codes, tokens, provider response bodies, or secrets in errors.
+      const category = ['TypeError', 'SyntaxError', 'TimeoutError', 'AbortError'].includes(error?.name) ? error.name : 'Error';
+      reportFailure({ stage, category, ...(status ? { status } : {}), ...(providerError ? { providerError } : {}) });
       return redirect(res, '/signin/?auth=failed');
     }
   };
