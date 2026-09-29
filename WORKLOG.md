@@ -15,3 +15,10 @@
 - Replaced `done · ···` with `stop editing · create`. Create retains the existing save/unsaved-work guard. Draft tools remain available through Cmd/Ctrl+K.
 - Updated the focused browser assertion and editor documentation. No new non-blocking issues found; no papercuts tool is available.
 - Verified: production build, typecheck, diff check, and the single reader/edit/resume browser scenario pass.
+
+## 2026-09-28 — Reader spacing
+
+- Screenshot showed uneven spaces beside inline links and loose gaps between short paragraphs.
+- Matched link margins to highlight padding so the highlight extends without adding text width. Tightened paragraph gaps from 0.72rem to 0.55em; retained line height and the shared read/edit styles.
+- Preserve the user's browser draft; reproduce its layout with a test fixture, not a content-file edit. No papercuts tool is available.
+- Verified: build and diff check pass. One focused browser test confirms zero added link width, 0.55em paragraph gaps, read/edit geometry parity, and unchanged draft source. Inspected the rendered screenshot.

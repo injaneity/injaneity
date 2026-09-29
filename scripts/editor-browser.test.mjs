@@ -147,3 +147,25 @@ test('create uses the same article; failed storage remains recoverable as markdo
   const download = await pending;
   assert.equal(await readFile(await download.path(), 'utf8'), '# New page\n\n- first\n- second unsaved');
 });
+
+test('inline highlights add no word spacing and paragraph gaps stay consistent in edit and read modes', async t => {
+  const source = '# Hi! I\'m Zane Chee.\n\nBuilding at [**cua (YC25)**](https://cua.ai), previously at **JPMorgan**, **SEA Group**, [**Hypotenuse AI (YC23)**](https://hypotenuse.ai).\n\nGraduating in December 2026. Find me on [GitHub](https://github.com/injaneity), [LinkedIn](https://linkedin.com/in/zanechee), [X](https://x.com/injaneity), & download my resume [here](!/zane.chee.resume.pdf).\n\nAlso a [**OpenAI Codex Ambassador**](https://developers.openai.com).';
+  const { page } = await setup(t, { source });
+  await edit(page);
+  const spacing = await page.locator('.reader-content > p').evaluateAll(nodes => nodes.map(node => {
+    const css = getComputedStyle(node);
+    return { bottom: parseFloat(css.marginBottom), expected: parseFloat(css.fontSize) * 0.55 };
+  }));
+  for (const gap of spacing) assert.ok(Math.abs(gap.bottom - gap.expected) < 0.01);
+  const extraWidths = await page.locator('.reader-content > p a').evaluateAll(nodes => nodes.map(node => {
+    const css = getComputedStyle(node);
+    return parseFloat(css.paddingLeft) + parseFloat(css.paddingRight) + parseFloat(css.marginLeft) + parseFloat(css.marginRight);
+  }));
+  assert.ok(extraWidths.length >= 5);
+  assert.ok(extraWidths.every(width => Math.abs(width) < 0.01));
+  const before = await metrics(page);
+  await page.getByRole('link', { name: 'stop editing', exact: true }).click();
+  assert.deepEqual(await metrics(page), before);
+  await page.screenshot({ path: path.join(tmpdir(), 'portfolio-spacing.png') });
+  assert.equal(await stored(page), source);
+});
