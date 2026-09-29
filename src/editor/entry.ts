@@ -1,40 +1,23 @@
 import '../index.css';
-import './editor.css';
-import { watchOwnerSession } from '../lib/owner-session';
+import { getOwnerSession } from '../lib/owner-session';
 
-const gate = document.getElementById('owner-gate')!;
-const message = document.getElementById('owner-message')!;
-const retry = document.getElementById('owner-retry')!;
-const desk = document.querySelector<HTMLElement>('.editor-shell')!;
-let loaded = false;
-let latestAuthenticated = false;
-let loading: Promise<unknown> | undefined;
-
-const refresh = watchOwnerSession(async (session) => {
-  latestAuthenticated = session?.authenticated === true;
-  if (!latestAuthenticated) {
-    dispatchEvent(new Event('owner-session-ended'));
-    (document.getElementById('contents') as HTMLDialogElement).close();
-    desk.hidden = true;
-    gate.hidden = false;
-    retry.hidden = session !== null;
-    message.textContent = !session ? 'could not check access. please try again.' : 'this page is no longer available.';
-    if (session) location.reload();
-    return;
-  }
+const query = new URLSearchParams(location.search);
+async function redirect() {
   try {
-    if (!loaded) {
-      loading ??= import('./main');
-      await loading;
-      loaded = true;
+    const session = await getOwnerSession();
+    if (!session.authenticated) { location.replace('/'); return; }
+    const slug = query.get('edit');
+    if (slug && /^[a-z0-9_-]+$/i.test(slug)) {
+      location.replace(`${slug === '00-landing' ? '/' : `/${slug}/`}?edit=1`);
+      return;
     }
-    if (!latestAuthenticated) return;
-    gate.hidden = true;
-    desk.hidden = false;
-  } catch {
-    loading = undefined;
-    message.textContent = 'the editor could not load. your saved drafts are unchanged.';
-    retry.hidden = false;
-  }
-});
-retry.addEventListener('click', refresh);
+    if (query.get('create') === '1') { location.replace('/?create=1'); return; }
+    const active = sessionStorage.getItem('writing-desk:active');
+    const draft = active ? JSON.parse(localStorage.getItem('writing-desk:v1:' + active) || 'null') : null;
+    if (draft?.id) {
+      const page = typeof draft.page === 'string' && /^[a-z0-9_-]+$/i.test(draft.page) && draft.page !== '00-landing' ? `/${draft.page}/` : '/';
+      location.replace(`${page}?draft=${encodeURIComponent(draft.id)}`);
+    } else location.replace('/?create=1');
+  } catch { document.getElementById('owner-message')!.textContent = 'could not open editing. return to the article and try again.'; }
+}
+void redirect();

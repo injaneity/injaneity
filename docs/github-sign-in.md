@@ -1,6 +1,6 @@
 # github owner sign-in
 
-the metadata below the article title shows `edit · create` only after `/api/auth/session` verifies the owner session. create starts a blank draft. edit opens the current page and resumes its latest linked local draft, if one exists. bookmark `/signin/` to sign in; it is not linked from the public site. signed-out requests to `/editor/` and its source copies return a real 404, not a login prompt.
+the metadata below the article title shows `edit · create` only after `/api/auth/session` verifies the owner session. create starts a blank draft in the reader shell. edit activates the current article in place and resumes its latest linked local draft, if one exists. old `/editor/` links redirect into the article after owner verification. bookmark `/signin/` to sign in; it is not linked from the public site. signed-out requests to `/editor/` and its source copies return a real 404, not a login prompt. public article routes remain readable; edit query parameters cannot bypass the owner session check.
 
 ## one-time setup
 

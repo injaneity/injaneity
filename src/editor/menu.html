@@ -1,0 +1,12 @@
+<div id="editor-tools">
+  <p id="editor-error" role="alert" hidden></p>
+  <dialog id="contents" aria-labelledby="contents-title">
+    <div class="contents-header"><h1 id="contents-title">drafts</h1><button type="button" id="close-contents" aria-label="Close">×</button></div>
+    <p id="contents-note">drafts stay in this browser · not published</p>
+    <div class="contents-actions"><button type="button" id="new-draft">new</button><button type="button" id="import-draft">import</button><button type="button" id="export-draft">download markdown</button></div>
+    <div id="documents"></div>
+    <details class="page-details"><summary>page details</summary><textarea id="metadata" spellcheck="false" aria-label="markdown frontmatter"></textarea><p id="metadata-error" role="alert" hidden></p></details>
+    <button type="button" id="owner-signout">sign out</button>
+  </dialog>
+  <input type="file" id="markdown-file" accept=".md,.markdown,text/markdown,text/plain" hidden />
+</div>

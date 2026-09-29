@@ -105,6 +105,7 @@ function transformArticle(metadata) {
           { ...node, properties: { ...node.properties, loading: 'lazy' } },
           ...(caption ? [element('figcaption', {}, [{ type: 'text', value: String(caption) }])] : []),
         ]);
+        figure.position = node.position;
         if (parent && index >= 0) parent.children[index] = figure;
       }
 
@@ -119,13 +120,14 @@ function transformArticle(metadata) {
           ]),
           node,
         ]);
+        wrapper.position = node.position;
         if (parent && index >= 0) parent.children[index] = wrapper;
       }
     });
   };
 }
 
-async function renderMarkdown(content, metadata = {}, { safe = false } = {}) {
+async function renderMarkdown(content, metadata = {}, { safe = false, editable = false } = {}) {
   const parser = unified().use(remarkParse).use(remarkGfm);
   const tree = parser.parse(content);
   let hasHtml = false;
@@ -140,10 +142,24 @@ async function renderMarkdown(content, metadata = {}, { safe = false } = {}) {
   processor.use(safe ? rehypeSanitize : () => {}, {
       ...defaultSchema,
       tagNames: [...defaultSchema.tagNames, 'video', 'source'],
-      attributes: { ...defaultSchema.attributes, video: ['controls', 'preload', 'poster', 'ariaLabel'], source: ['src', 'type'] },
+      attributes: { ...defaultSchema.attributes, video: ['controls', 'src', 'preload', 'poster', 'ariaLabel'], source: ['src', 'type'] },
     });
   if (hasCode || hasHtml) processor.use((await import('rehype-highlight')).default);
-  processor.use(() => transformArticle(metadata)).use(rehypeStringify);
+  processor.use(() => transformArticle(metadata)).use(() => (result) => {
+    result.children = result.children.map(node => {
+      if (node.tagName === 'p' && node.children?.length === 1 && node.children[0].tagName === 'figure') {
+        return { ...node.children[0], position: node.position };
+      }
+      return node;
+    });
+    if (editable) for (const node of result.children) {
+      if (node.type !== 'element' || !node.position) continue;
+      const block = tree.children.find(block => block.position.start.offset <= node.position.start.offset && block.position.end.offset >= node.position.end.offset);
+      if (!block) continue;
+      node.properties.dataEditFrom = block.position.start.offset;
+      node.properties.dataEditTo = block.position.end.offset;
+    }
+  }).use(rehypeStringify);
   const file = processor.stringify(await processor.run(tree));
   return String(file)
     .replace(/<p>(<figure class="image-node">[\s\S]*?<\/figure>)<\/p>/g, '$1')
