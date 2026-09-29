@@ -9,3 +9,9 @@
 - Implemented: edit/create lazy-load on the article route; shared rendered blocks activate Markdown in place; done keeps the local draft readable; session loss restores public content. Legacy editor links redirect to the article. Draft storage keys and frontmatter remain compatible.
 - Verified: build, typecheck, lint, seven editor/renderer checks, and four isolated browser scenarios. Desktop and mobile heading/paragraph/header/footer geometry, fonts, and filters match exactly before and after entering edit mode. Screenshots inspected; no separate shell or text area appears until a block is selected.
 - Publishing remains unchanged: edits are local drafts, not automatic site publication.
+
+## 2026-09-28 — Simplify editing controls
+
+- Replaced `done · ···` with `stop editing · create`. Create retains the existing save/unsaved-work guard. Draft tools remain available through Cmd/Ctrl+K.
+- Updated the focused browser assertion and editor documentation. No new non-blocking issues found; no papercuts tool is available.
+- Verified: production build, typecheck, diff check, and the single reader/edit/resume browser scenario pass.

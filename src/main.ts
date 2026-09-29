@@ -44,11 +44,10 @@ function initOwnerControls() {
     const editing = editor?.editing || opening;
     for (const metadata of article.querySelectorAll('.article-byline')) {
       const controls = document.createElement('span'); controls.className = 'owner-controls';
-      for (const label of editing ? ['done', '···'] : ['edit', 'create']) {
+      for (const label of editing ? ['stop editing', 'create'] : ['edit', 'create']) {
         const link = document.createElement('a');
         link.textContent = label; link.dataset.ownerAction = label;
-        link.href = label === 'create' ? '/?create=1' : `${location.pathname}?edit=1`;
-        if (label === '···') { link.ariaLabel = 'Editor actions'; link.setAttribute('aria-haspopup', 'dialog'); }
+        link.href = label === 'create' ? '/?create=1' : label === 'stop editing' ? location.pathname : `${location.pathname}?edit=1`;
         if (metadata.textContent || controls.childNodes.length) controls.append(' · ');
         controls.append(link);
       }
@@ -78,8 +77,7 @@ function initOwnerControls() {
     if (!target || !owner || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
     const action = target.dataset.ownerAction;
-    if (action === '···') editor?.menu();
-    else if (action === 'done') { await editor?.done(); if (!editor?.editing) history.replaceState(null, '', location.pathname); render(); }
+    if (action === 'stop editing') { await editor?.done(); if (!editor?.editing) history.replaceState(null, '', location.pathname); render(); }
     else await enter(action === 'create');
   });
   watchOwnerSession((session) => {

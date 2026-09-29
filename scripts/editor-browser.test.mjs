@@ -71,6 +71,7 @@ test('edit stays on the reader with identical layout, then saves and resumes loc
   await page.screenshot({ path: path.join(tmpdir(), 'portfolio-reader-before.png') });
   await edit(page);
   assert.equal(new URL(page.url()).pathname, '/');
+  await expect(page.locator('.owner-controls')).toHaveText(' · stop editing · create');
   assert.deepEqual(await metrics(page), before);
   assert.equal(await page.locator('.cm-editor').count(), 0);
   await page.screenshot({ path: path.join(tmpdir(), 'portfolio-reader-edit.png') });
@@ -84,7 +85,7 @@ test('edit stays on the reader with identical layout, then saves and resumes loc
   await page.keyboard.press('ControlOrMeta+Shift+z');
   await page.keyboard.press('Escape');
   await expect(page.locator('.reader-content > p').last()).toContainText('Local addition.');
-  await page.getByRole('link', { name: 'done', exact: true }).click();
+  await page.getByRole('link', { name: 'stop editing', exact: true }).click();
   await expect(page.locator('.reader-content')).not.toHaveClass(/is-editing/);
   await expect(page.locator('.reader-content > p').last()).toContainText('Local addition.');
   await page.reload();
