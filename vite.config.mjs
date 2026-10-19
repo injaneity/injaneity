@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig, loadEnv } from 'vite';
 import { aliases } from './scripts/site-metadata.mjs';
 import { createAuthHandler } from './server/auth.mjs';
+import { contentResponse } from './server/content.mjs';
 import { isOwnerRequest } from './server/pages-auth.mjs';
 
 export default defineConfig({
@@ -24,6 +25,16 @@ export default defineConfig({
       const auth = createAuthHandler({ env });
       server.middlewares.use(async (req, res, next) => {
         if (req.url?.split('?')[0].startsWith('/api/auth/')) return auth(req, res);
+        if (req.url?.startsWith('/api/content/')) {
+          const chunks = [];
+          for await (const chunk of req) chunks.push(chunk);
+          const request = new Request(`http://${req.headers.host}${req.url}`, { method: req.method, headers: req.headers,
+            ...(['GET', 'HEAD'].includes(req.method) ? {} : { body: Buffer.concat(chunks) }) });
+          const response = await contentResponse(request, env);
+          res.writeHead(response.status, Object.fromEntries(response.headers));
+          res.end(Buffer.from(await response.arrayBuffer()));
+          return;
+        }
         if (!['GET', 'HEAD'].includes(req.method)) return next();
         const url = new URL(req.url, 'http://localhost');
         if (/^\/editor(?:\/|$)/.test(url.pathname)) {

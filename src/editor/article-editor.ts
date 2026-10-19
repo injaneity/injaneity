@@ -1,7 +1,7 @@
 import { renderMarkdown, type Metadata } from '../lib/markdown.mjs';
 import { createLiveEditor } from './live-markdown';
 
-export function createArticleEditor(article: HTMLElement, changed: () => void, notify: (message: string) => void, rendered: () => void, limit: number) {
+export function createArticleEditor(article: HTMLElement, changed: () => void, notify: (message: string) => void, rendered: () => void, settled: () => void, limit: number) {
   let source = '';
   let metadata: Metadata = {};
   let enabled = false;
@@ -57,6 +57,7 @@ export function createArticleEditor(article: HTMLElement, changed: () => void, n
       if (from >= active.to) { from += delta; to += delta; }
       commit();
       await paint();
+      settled();
     }
     if (!enabled) return;
     const nodes = [...article.querySelectorAll<HTMLElement>(`[data-edit-from="${from}"][data-edit-to="${to}"]`)];
@@ -88,11 +89,15 @@ export function createArticleEditor(article: HTMLElement, changed: () => void, n
     });
   }
   async function finish() {
+    const wasActive = !!active;
     commit();
     await paint();
+    if (wasActive) settled();
   }
   const click = (event: MouseEvent) => {
-    if (!enabled || !(event.target instanceof Element) || event.target.closest('.inline-manuscript, .owner-controls, .append-paragraph, .article-navigation')) return;
+    // Links, buttons and media keep working, so the editable page still reads like the public one.
+    if (!enabled || !(event.target instanceof Element) || event.target.closest('.inline-manuscript, .owner-controls, .append-paragraph, .article-navigation, a[href], button, video, summary')) return;
+    if (getSelection()?.toString()) return;
     const block = event.target.closest<HTMLElement>('[data-edit-from]');
     if (!block) return;
     event.preventDefault();
@@ -107,7 +112,7 @@ export function createArticleEditor(article: HTMLElement, changed: () => void, n
       const from = event.shiftKey ? future : past, to = event.shiftKey ? past : future;
       const next = from.pop();
       if (next === undefined) return;
-      event.preventDefault(); to.push(source); source = next; changed(); void paint();
+      event.preventDefault(); to.push(source); source = next; changed(); void paint().then(settled);
     }
   };
   article.addEventListener('click', click);
@@ -121,8 +126,6 @@ export function createArticleEditor(article: HTMLElement, changed: () => void, n
       enabled = true;
       await paint();
     },
-    async enable() { enabled = true; await paint(); },
-    async disable() { enabled = false; await finish(); },
     finish,
     focus() { (active?.editor.view.contentDOM || article.querySelector<HTMLElement>('[data-edit-from], .append-paragraph'))?.focus(); },
     async setMetadata(details: Metadata) { metadata = details; if (!active) await paint(); },

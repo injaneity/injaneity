@@ -41,11 +41,11 @@ test('missing settings fail closed without a development owner bypass', async ()
   assert.equal((await call(handler, '/api/auth/login')).statusCode, 503);
 });
 
-test('OAuth uses state, PKCE, exact callback and no repository scopes', async () => {
+test('OAuth uses state, PKCE, exact callback and only the public repository scope', async () => {
   const { handler, requests } = fixture();
   const flow = await begin(handler, '/editor/?edit=python-decorators');
   assert.equal(flow.location.origin, 'https://github.com');
-  assert.equal(flow.location.searchParams.get('scope'), '');
+  assert.equal(flow.location.searchParams.get('scope'), 'public_repo');
   assert.equal(flow.location.searchParams.get('code_challenge_method'), 'S256');
   assert.equal(flow.location.searchParams.get('redirect_uri'), 'https://zanechee.dev/api/auth/callback');
   assert.match(flow.login.headers['set-cookie'], /HttpOnly; SameSite=Lax; Max-Age=600; Secure/);
@@ -58,6 +58,7 @@ test('OAuth uses state, PKCE, exact callback and no repository scopes', async ()
   const session = await call(handler, '/api/auth/session', { headers: { cookie: cookieHeader(response) } });
   assert.equal(JSON.parse(session.body).authenticated, true);
   assert.equal(JSON.parse(session.body).login, 'injaneity');
+  assert.equal(JSON.parse(session.body).canPublish, true);
   assert.doesNotMatch(session.body + cookieHeader(response), /fixture-token|test-client-secret/);
   assert.match(session.headers['cache-control'], /no-store/);
 });

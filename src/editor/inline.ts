@@ -4,12 +4,15 @@ import { getOwnerSession, signOut } from '../lib/owner-session';
 import { parseFrontmatter } from '../lib/markdown.mjs';
 import { createArticleEditor } from './article-editor';
 
-type Draft = { id: string; source: string; updated: string; page?: string };
+// `published` is the source last confirmed on GitHub; a draft whose source differs has edits still to publish.
+type Draft = { id: string; source: string; updated: string; page?: string; sha?: string; published?: string };
 type Page = { slug: string; title: string };
+type Remote = { source: string; sha: string };
 const prefix = 'writing-desk:v1:';
 const activeKey = 'writing-desk:active';
 const limit = 200_000;
 const pagePath = (slug?: string) => !slug || slug === '00-landing' ? '/' : `/${encodeURIComponent(slug)}/`;
+const pending = (draft: Draft) => draft.published === undefined ? !!draft.source.trim() : draft.source !== draft.published;
 
 function parseDraft(value: string | null): Draft | undefined {
   try {
@@ -29,22 +32,51 @@ function drafts() {
 }
 const titleOf = (source: string) => source.match(/^#\s+(.+)$/m)?.[1].replace(/[*_`]/g, '').trim() || 'untitled';
 
+async function fetchRemote(page: string): Promise<Remote | number> {
+  const response = await fetch(`/api/content/${encodeURIComponent(page)}`, { credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' } });
+  if (!response.ok) return response.status;
+  const value = await response.json();
+  if (typeof value?.source !== 'string' || typeof value.sha !== 'string') throw new Error('invalid page response');
+  return value;
+}
+const slugOf = (source: string) => titleOf(source).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 100);
+
 export async function startInlineEditor(slug: string, create: boolean, renderControls: () => void, draftId?: string) {
   const session = await getOwnerSession();
   if (!session.authenticated) throw new Error('Sign in again to edit');
-  let draft = draftId ? drafts().find(item => item.id === draftId) : !create ? drafts().find(item => item.page === slug) : undefined;
-  if (draftId && !draft) throw new Error('Draft unavailable');
-  let stored: string | null = draft ? localStorage.getItem(prefix + draft.id) : null;
-  if (!draft) {
-    let source = '';
-    if (!create) {
-      const response = await fetch(`/editor/posts/${encodeURIComponent(slug)}.md`, { cache: 'no-store' });
-      if (!response.ok) throw new Error('Could not open this page');
-      source = await response.text();
-      if (source.length > limit) throw new Error('This page is too large to edit');
-    }
-    draft = { id: crypto.randomUUID(), source, updated: new Date().toISOString(), ...(!create ? { page: slug } : {}) };
+  let canPublish = session.canPublish === true;
+  const explicit = draftId ? drafts().find(item => item.id === draftId) : undefined;
+  if (draftId && !explicit) throw new Error('Draft unavailable');
+  const page = create ? undefined : explicit ? explicit.page : slug;
+  // The live source comes from GitHub, so edits never start from a stale build.
+  let remote: Remote | undefined;
+  if (page && canPublish) {
+    try {
+      const result = await fetchRemote(page);
+      if (typeof result === 'number') { if (result === 401) canPublish = false; else if (result !== 404) throw new Error('Could not open this page'); }
+      else remote = result;
+    } catch { canPublish = false; }
   }
+  if (page && !remote && !explicit) {
+    const response = await fetch(`/editor/posts/${encodeURIComponent(page)}.md`, { cache: 'no-store' });
+    if (!response.ok) throw new Error('Could not open this page');
+    const source = await response.text();
+    remote = { source, sha: '' };
+  }
+  if (remote && remote.source.length > limit) throw new Error('This page is too large to edit');
+  let draft: Draft;
+  if (explicit) {
+    // Opening a draft on purpose makes it the next version of its page.
+    draft = { ...explicit, ...(remote?.sha ? { sha: remote.sha } : {}), published: page ? remote?.source ?? explicit.published : explicit.published };
+  } else if (create) {
+    draft = { id: crypto.randomUUID(), source: '', updated: new Date().toISOString(), published: '' };
+  } else {
+    const linked = drafts().find(item => item.page === page && item.published !== undefined);
+    // Unpublished edits from an earlier visit win, unless the page changed on GitHub since.
+    if (linked && pending(linked) && (!remote?.sha || linked.sha === remote.sha)) draft = linked;
+    else draft = { id: linked?.id || crypto.randomUUID(), source: remote!.source, updated: new Date().toISOString(), page, sha: remote!.sha || undefined, published: remote!.source };
+  }
+  let stored: string | null = localStorage.getItem(prefix + draft.id);
   if (!(await getOwnerSession()).authenticated) throw new Error('Sign in again to edit');
   const current: Draft = draft;
   const article = document.querySelector<HTMLElement>('[data-reader-content]')!;
@@ -60,14 +92,76 @@ export async function startInlineEditor(slug: string, create: boolean, renderCon
   let dirty = false;
   let storageFailed = false;
   let invalidMetadata = false;
-  let editing = true;
   let timer: ReturnType<typeof setTimeout>;
+  let publishTimer: ReturnType<typeof setTimeout>;
+  let publishing = false;
+  let queued = false;
+  let status = '';
   let frontmatter = current.source.match(/^---[ \t]*\r?\n[\s\S]*?\r?\n---[ \t]*(?:\r?\n|$)(?:\r?\n)*/)?.[0] || '';
   let published: Page[] = [];
   function notice(message = '') { const error = element('editor-error'); error.textContent = message; error.hidden = !message; }
-  const editor = createArticleEditor(article, changed, notice, renderControls, limit - frontmatter.length);
+  function setStatus(next: string) { if (next !== status) { status = next; renderControls(); } }
+  const editor = createArticleEditor(article, changed, notice, renderControls, () => schedule(1500), limit - frontmatter.length);
   const source = () => frontmatter + editor.source;
-  function changed() { dirty = true; clearTimeout(timer); timer = setTimeout(save, 500); }
+  function changed() { dirty = true; clearTimeout(timer); timer = setTimeout(save, 500); setStatus(canPublish ? 'editing' : 'sign in again to publish'); schedule(30_000); }
+  function schedule(delay: number) {
+    clearTimeout(publishTimer);
+    if (canPublish && !abort.signal.aborted) publishTimer = setTimeout(() => void publish(), delay);
+  }
+  async function publish() {
+    clearTimeout(publishTimer);
+    if (!canPublish || invalidMetadata || abort.signal.aborted) return;
+    if (publishing) { queued = true; return; }
+    save();
+    if (!pending(current)) { setStatus('published'); return; }
+    const target = current.page || slugOf(current.source);
+    if (!target) { setStatus('add a title to publish'); return; }
+    if (!current.page && !frontmatter) {
+      // New pages get a created date so the byline matches the rest of the site.
+      frontmatter = `---\ncreated: ${new Date().toLocaleDateString('en-CA')}\n---\n\n`;
+      dirty = true; save(); await editor.setMetadata(parseFrontmatter(source()).metadata);
+    }
+    const text = current.source;
+    publishing = true; setStatus('publishing…');
+    try {
+      const response = await fetch(`/api/content/${encodeURIComponent(target)}`, { method: 'PUT', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ source: text, ...(current.page && current.sha ? { sha: current.sha } : {}) }) });
+      const result = await response.json().catch(() => ({}));
+      if (response.ok && typeof result.sha === 'string') {
+        Object.assign(current, { page: target, sha: result.sha, published: text });
+        dirty = true; save(); notice('');
+        setStatus(pending(current) ? 'editing' : 'published · live after the next deploy');
+        if (pending(current)) schedule(1500);
+        return;
+      }
+      if (response.status === 409 && current.page) {
+        // A save that already landed (for example from a closing tab) is not a real conflict.
+        const latest = await fetchRemote(current.page).catch(() => undefined);
+        if (latest && typeof latest !== 'number' && latest.source === text) {
+          Object.assign(current, { sha: latest.sha, published: text }); dirty = true; save(); setStatus('published'); return;
+        }
+      }
+      if (response.status === 401) canPublish = false;
+      setStatus('not published');
+      notice(`${result.error || 'could not publish'} · your edits are kept in this browser`);
+    } catch {
+      setStatus('offline · will retry');
+      schedule(15_000);
+    } finally {
+      publishing = false;
+      if (queued) { queued = false; void publish(); }
+    }
+  }
+  function publishOnExit() {
+    // Pages can close before an async save finishes, so hand the latest edit to a keepalive request.
+    save();
+    if (!canPublish || publishing || !current.page || !pending(current) || current.source.length > 60_000) return;
+    try {
+      void fetch(`/api/content/${encodeURIComponent(current.page)}`, { method: 'PUT', credentials: 'same-origin', keepalive: true,
+        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ source: current.source, ...(current.sha ? { sha: current.sha } : {}) }) }).catch(() => {});
+    } catch { /* The draft stays pending and publishes on the next visit. */ }
+  }
   function save() {
     clearTimeout(timer);
     if (invalidMetadata) return false;
@@ -87,13 +181,12 @@ export async function startInlineEditor(slug: string, create: boolean, renderCon
   }
   function canLeave() { return save() || confirm('this draft could not be saved. download a copy before leaving. leave anyway?'); }
   function menu() {
-    if (!editing) return;
     save();
     metadata.value = invalidMetadata ? metadata.value : frontmatter;
     const list = element('documents'); list.replaceChildren();
     for (const [heading, items] of [
-      ['drafts', drafts().map(item => ({ title: titleOf(item.source), href: `${pagePath(item.page)}?draft=${encodeURIComponent(item.id)}` }))],
-      ['published pages', published.map(item => ({ title: item.title, href: `${pagePath(item.slug)}?edit=1` }))],
+      ['unpublished drafts', drafts().filter(pending).map(item => ({ title: titleOf(item.source), href: `${pagePath(item.page)}?draft=${encodeURIComponent(item.id)}` }))],
+      ['published pages', published.map(item => ({ title: item.title, href: pagePath(item.slug) }))],
     ] as const) {
       const label = document.createElement('h2'); label.textContent = heading;
       const group = document.createElement('ul');
@@ -142,23 +235,23 @@ export async function startInlineEditor(slug: string, create: boolean, renderCon
     try { await signOut(); location.reload(); } catch { notice('could not sign out · try again'); }
   }, options);
   addEventListener('keydown', event => {
-    if (!editing || !(event.metaKey || event.ctrlKey)) return;
+    if (!(event.metaKey || event.ctrlKey)) return;
     if (event.key.toLowerCase() === 'k') { event.preventDefault(); menu(); }
-    if (event.key.toLowerCase() === 's') { event.preventDefault(); if (event.shiftKey) download(); else save(); }
+    if (event.key.toLowerCase() === 's') { event.preventDefault(); if (event.shiftKey) download(); else { save(); void publish(); } }
   }, options);
-  addEventListener('pagehide', save, options);
-  document.addEventListener('visibilitychange', () => { if (document.hidden) save(); }, options);
+  addEventListener('pagehide', publishOnExit, options);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { save(); if (pending(current)) void publish(); } }, options);
   addEventListener('beforeunload', event => { if ((dirty || invalidMetadata) && !save()) { event.preventDefault(); event.returnValue = ''; } }, options);
   void fetch('/editor/posts.json').then(response => response.ok ? response.json() : []).then(value => { published = value; }).catch(() => {});
   await editor.setSource(current.source.slice(frontmatter.length), parseFrontmatter(current.source).metadata);
   dirty = true; save();
+  if (!canPublish) setStatus('sign in again to publish');
+  else if (pending(current) && (current.page || current.source.trim())) schedule(1500);
   return {
     get id() { return current.id; },
-    get editing() { return editing; },
+    get status() { return status; },
     canLeave,
     menu,
-    async resume() { editing = true; await editor.enable(); },
-    async done() { if (!canLeave()) return; editing = false; dialog.close(); await editor.disable(); save(); },
-    destroy() { save(); abort.abort(); editor.destroy(); tools.remove(); article.innerHTML = original; renderControls(); },
+    destroy() { save(); clearTimeout(publishTimer); abort.abort(); editor.destroy(); tools.remove(); article.innerHTML = original; renderControls(); },
   };
 }

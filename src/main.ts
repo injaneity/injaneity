@@ -25,15 +25,17 @@ function initCopyButtons() {
   });
 }
 
+// Signed-in owners get a page that is always editable; there is no separate edit mode.
 function initOwnerControls() {
   const slug = document.body.dataset.pageSlug;
   if (!slug) return;
   let owner = false;
   let opening = false;
+  let failed = false;
   let version = 0;
   let editor: Awaited<ReturnType<typeof import('./editor/inline').startInlineEditor>> | undefined;
   const query = new URLSearchParams(location.search);
-  let requested = query.has('edit') || query.has('create') || query.has('draft');
+  let requested = { create: query.get('create') === '1', draft: query.get('draft') || undefined };
   const render = () => {
     document.querySelectorAll('.owner-controls').forEach(node => node.remove());
     if (!owner) return;
@@ -41,23 +43,24 @@ function initOwnerControls() {
     if (!article.querySelector('.article-byline')) {
       const byline = document.createElement('div'); byline.className = 'article-byline'; article.prepend(byline);
     }
-    const editing = editor?.editing || opening;
     for (const metadata of article.querySelectorAll('.article-byline')) {
       const controls = document.createElement('span'); controls.className = 'owner-controls';
-      for (const label of editing ? ['stop editing', 'create'] : ['edit', 'create']) {
-        const link = document.createElement('a');
-        link.textContent = label; link.dataset.ownerAction = label;
-        link.href = label === 'create' ? '/?create=1' : label === 'stop editing' ? location.pathname : `${location.pathname}?edit=1`;
-        if (metadata.textContent || controls.childNodes.length) controls.append(' · ');
-        controls.append(link);
+      const status = opening ? 'opening…' : editor?.status;
+      if (status) {
+        const label = document.createElement('span'); label.className = 'owner-status'; label.textContent = status;
+        if (metadata.textContent) controls.append(' · ');
+        controls.append(label);
       }
+      const link = document.createElement('a');
+      link.textContent = 'create'; link.dataset.ownerAction = 'create'; link.href = '/?create=1';
+      if (metadata.textContent || controls.childNodes.length) controls.append(' · ');
+      controls.append(link);
       metadata.append(controls);
     }
     initCopyButtons();
   };
-  const enter = async (create = false, draftId?: string) => {
+  const open = async (create = false, draftId?: string) => {
     if (!owner || opening) return;
-    if (editor && !create) { await editor.resume(); render(); return; }
     if (editor && !editor.canLeave()) return;
     opening = true; const request = ++version; render();
     try {
@@ -67,8 +70,10 @@ function initOwnerControls() {
       const next = await startInlineEditor(slug, create, render, draftId);
       if (!owner || request !== version) { next.destroy(); return; }
       editor = next;
-      history.replaceState(null, '', `${location.pathname}?${create || draftId ? `draft=${encodeURIComponent(next.id)}` : 'edit=1'}`);
+      if (create || draftId) history.replaceState(null, '', `${location.pathname}?draft=${encodeURIComponent(next.id)}`);
+      else if (location.search) history.replaceState(null, '', location.pathname);
     } catch {
+      failed = true;
       if (owner) alert('could not open editing. your drafts are unchanged. try signing in again.');
     } finally { opening = false; render(); }
   };
@@ -76,17 +81,17 @@ function initOwnerControls() {
     const target = event.target instanceof Element ? event.target.closest<HTMLElement>('[data-owner-action]') : null;
     if (!target || !owner || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
-    const action = target.dataset.ownerAction;
-    if (action === 'stop editing') { await editor?.done(); if (!editor?.editing) history.replaceState(null, '', location.pathname); render(); }
-    else await enter(action === 'create');
+    failed = false;
+    await open(true);
   });
   watchOwnerSession((session) => {
     owner = session?.authenticated === true;
     if (!owner) { ++version; const current = editor; editor = undefined; current?.destroy(); }
     render();
-    if (owner && requested) {
-      requested = false;
-      void enter(query.get('create') === '1', query.get('draft') || undefined);
+    if (owner && !editor && !opening && !failed) {
+      const { create, draft } = requested;
+      requested = { create: false, draft: undefined };
+      void open(create, draft);
     }
   });
 }
