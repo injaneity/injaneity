@@ -1,6 +1,6 @@
 # github owner sign-in
 
-the metadata below the article title shows `edit · create` only after `/api/auth/session` verifies the owner session. create starts a blank draft in the reader shell. edit activates the current article in place and resumes its latest linked local draft, if one exists. old `/editor/` links redirect into the article after owner verification. bookmark `/signin/` to sign in; it is not linked from the public site. signed-out requests to `/editor/` and its source copies return a real 404, not a login prompt. public article routes remain readable; edit query parameters cannot bypass the owner session check.
+once `/api/auth/session` verifies the owner session, every article is editable in place and edits publish to the repository (see [writing desk](writing-desk.md)). the metadata below the title shows the publishing state and `create`. old `/editor/` links redirect into the article after owner verification. bookmark `/signin/` to sign in; it is not linked from the public site. signed-out requests to `/editor/` and its source copies return a real 404, not a login prompt. public article routes remain readable; edit query parameters cannot bypass the owner session check.
 
 ## one-time setup
 
@@ -22,7 +22,7 @@ use the exact origin above, not `localhost`, if you registered `127.0.0.1`. if a
 
 public pages remain static on cloudflare pages. `functions/api/auth/[[action]].js` handles authentication, and `functions/editor/_middleware.js` protects editor routes. both use the same handler as local preview, with web crypto rather than node-only APIs. no vercel adapter or node compatibility flag is needed.
 
-`public/_routes.json` limits function invocation to `/api/auth` and `/editor` routes. blog pages and assets stay static. `dist/404.html` prevents cloudflare's default homepage fallback for missing routes. all auth and editor responses are private and must not be cached.
+`public/_routes.json` limits function invocation to `/api/auth`, `/api/content`, and `/editor` routes. blog pages and assets stay static. `dist/404.html` prevents cloudflare's default homepage fallback for missing routes. all auth and editor responses are private and must not be cached.
 
 for production, register a separate oauth app with homepage `https://zanechee.dev/` and callback `https://zanechee.dev/api/auth/callback`. leave wildcard matching and device flow off. set `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `AUTH_SECRET`, and `AUTH_ORIGIN` as production environment bindings in the existing cloudflare pages project. use a fresh signing secret and `AUTH_ORIGIN=https://zanechee.dev`. redeploy after configuring secrets; they are bound to deployments. do not reuse development credentials in production or enable production login on `pages.dev` preview domains.
 
@@ -33,12 +33,12 @@ run `npx wrangler pages dev dist --compatibility-date 2026-09-22` to check the p
 ## security and limits
 
 - only github account id `44902825` with login `injaneity` is allowed. the fixed id prevents a different account from gaining access by reusing a username.
-- oauth uses random state, pkce, an exact callback, and a short-lived http-only flow cookie. github issues single-use authorization codes. no repository scopes are requested.
-- the server reads the authenticated github profile and discards the access token. tokens and secrets never reach client javascript or browser storage.
+- oauth uses random state, pkce, an exact callback, and a short-lived http-only flow cookie. github issues single-use authorization codes. the only scope requested is `public_repo`, which publishing needs to commit page edits.
+- the access token is stored only inside the signed http-only session cookie, encrypted with aes-gcm under a key derived from `AUTH_SECRET`. it never reaches client javascript or browser storage. sign-out revokes it at github (best effort).
 - sessions are signed, bound to the configured origin, and expire after eight hours. production cookies use `Secure`, `HttpOnly`, `SameSite=Lax`, and the `__Host-` prefix. localhost cookies omit `Secure` only for local http.
 - sign-out is a same-origin post and clears this browser's cookies. rotating `AUTH_SECRET` invalidates all sessions; individual stolen sessions cannot otherwise be revoked before expiry in this stateless design.
 - the editor hides on session expiry or a failed session check and preserves the current local draft. raw editor assets and already-public source copies are not secret. this is not encrypted draft storage.
-- publishing is still not connected. adding a save-to-repository or x endpoint must verify the server session and csrf protection; hiding a button is not authorization.
+- `/api/content/<slug>` verifies the owner session on every request and requires a same-origin `Origin` header and a json body for writes. hiding a control is not authorization. a stolen session cookie can commit to public repositories until it expires or you sign out, so treat it like a password.
 
 run `npm run build && npm run test:site && npm run typecheck && npm run lint`. the tests include a mocked github provider inside cloudflare's actual runtime, covering request construction, sessions, and redirect rejection. use `redirect: 'manual'` and reject non-success responses: workerd rejects `redirect: 'error'` before making the request, even though node accepts it.
 

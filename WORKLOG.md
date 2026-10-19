@@ -1,5 +1,12 @@
 # Worklog
 
+## 2026-10-19 — Always-on editing that publishes
+
+- Request: no switching between edit and read; when signed in through `/signin/`, edits should persist to the live site.
+- Removed `edit` / `stop editing`. Owners get the editable page as soon as the session is verified; links, buttons and video still work.
+- Sign-in now asks for `public_repo` and keeps the token encrypted in the session cookie. `/api/content/<slug>` reads source from GitHub and commits edits to `main` with sha-checked updates, which triggers the Cloudflare Pages deploy. Browser drafts remain as an offline buffer.
+- Verified: build, typecheck, lint, site/auth/content suites, and seven browser scenarios against a fake repository.
+
 ## 2026-09-28 — Edit on the reader page
 
 - Request: make editing use the page visitors see, not a separate writing desk.

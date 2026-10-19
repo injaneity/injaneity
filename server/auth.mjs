@@ -14,6 +14,24 @@ function randomValue() { return base64url(crypto.getRandomValues(new Uint8Array(
 async function signingKey(config) {
   return crypto.subtle.importKey('raw', encoder.encode(config.secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify']);
 }
+// The GitHub token lives only inside the HttpOnly session cookie, encrypted with a key derived from AUTH_SECRET.
+async function tokenKey(config) {
+  const material = await crypto.subtle.digest('SHA-256', encoder.encode(`portfolio-github-token:${config.secret}`));
+  return crypto.subtle.importKey('raw', material, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+}
+async function sealToken(token, config) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const sealed = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await tokenKey(config), encoder.encode(token)));
+  return `${base64url(iv)}.${base64url(sealed)}`;
+}
+async function openToken(value, config) {
+  if (typeof value !== 'string') return null;
+  const [iv, sealed, extra] = value.split('.');
+  if (!iv || !sealed || extra) return null;
+  try {
+    return new TextDecoder().decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: decode(iv) }, await tokenKey(config), decode(sealed)));
+  } catch { return null; }
+}
 
 function configuration(env) {
   if (!env.GITHUB_CLIENT_ID || !env.GITHUB_CLIENT_SECRET || !env.AUTH_SECRET || env.AUTH_SECRET.length < 32 || !env.AUTH_ORIGIN) return null;
@@ -74,7 +92,16 @@ function json(res, status, body) {
 }
 function redirect(res, location) { res.statusCode = 303; res.setHeader('Location', location); res.end(); }
 
-// Shared by the local preview and the deployment adapter. No access tokens are stored.
+// Returns the owner's GitHub token for a request, or null when the session is missing, expired or predates publishing.
+export async function ownerToken(req, env, clock = () => Date.now()) {
+  const config = configuration(env);
+  if (!config) return null;
+  const session = await verify(cookies(req)[cookieName('session', config)], 'session', config, Math.floor(clock() / 1000));
+  if (session?.sub !== owner.id || session?.login !== owner.login) return null;
+  return { config, token: await openToken(session.gh, config) };
+}
+
+// Shared by the local preview and the deployment adapter. The access token is kept only encrypted in the session cookie.
 export function createAuthHandler({ env = {}, fetcher = fetch, clock = () => Date.now(),
   reportFailure = (failure) => console.warn('owner-auth-failure', JSON.stringify(failure)) } = {}) {
   return async function auth(req, res) {
@@ -98,11 +125,18 @@ export function createAuthHandler({ env = {}, fetcher = fetch, clock = () => Dat
     const isOwner = session?.sub === owner.id && session?.login === owner.login;
 
     if (action === 'session') return json(res, 200, { authenticated: isOwner, configured: true,
-      ...(isOwner ? { login: owner.login, expiresAt: session.exp * 1000 } : {}) });
+      ...(isOwner ? { login: owner.login, expiresAt: session.exp * 1000, canPublish: typeof session.gh === 'string' } : {}) });
 
     if (action === 'logout') {
       if (req.headers.origin !== config.origin) return json(res, 403, { error: 'invalid origin' });
       res.setHeader('Set-Cookie', [cookie('session', '', 0, config), cookie('oauth', '', 0, config)]);
+      const token = isOwner ? await openToken(session.gh, config) : null;
+      // Best effort: revoke the token at GitHub so a copied cookie stops working too.
+      if (token) await fetcher(`https://api.github.com/applications/${config.clientId}/token`, {
+        method: 'DELETE', headers: { Accept: 'application/vnd.github+json', Authorization: `Basic ${btoa(`${config.clientId}:${config.clientSecret}`)}`,
+          'Content-Type': 'application/json', 'User-Agent': 'zanechee-portfolio' }, body: JSON.stringify({ access_token: token }),
+        signal: AbortSignal.timeout(5000), redirect: 'manual',
+      }).catch(() => {});
       return json(res, 200, { authenticated: false });
     }
 
@@ -115,7 +149,7 @@ export function createAuthHandler({ env = {}, fetcher = fetch, clock = () => Dat
       res.setHeader('Set-Cookie', cookie('oauth', await sign({ kind: 'oauth', state, verifier, next, exp: now + flowSeconds }, config), flowSeconds, config));
       const github = new URL('https://github.com/login/oauth/authorize');
       github.search = new URLSearchParams({ client_id: config.clientId, redirect_uri: callback,
-        scope: '', state, code_challenge: base64url(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(verifier)))),
+        scope: 'public_repo', state, code_challenge: base64url(new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(verifier)))),
         code_challenge_method: 'S256', allow_signup: 'false' }).toString();
       return redirect(res, github.href);
     }
@@ -162,7 +196,7 @@ export function createAuthHandler({ env = {}, fetcher = fetch, clock = () => Dat
       stage = 'session-signing';
       status = undefined;
       res.setHeader('Set-Cookie', [cookie('oauth', '', 0, config), cookie('session', await sign({ kind: 'session', sub: owner.id,
-        login: owner.login, exp: now + sessionSeconds }, config), sessionSeconds, config)]);
+        login: owner.login, gh: await sealToken(token.access_token, config), exp: now + sessionSeconds }, config), sessionSeconds, config)]);
       return redirect(res, safeReturnTo(flow.next, config.origin));
     } catch (error) {
       // Never expose codes, tokens, provider response bodies, or secrets in errors.

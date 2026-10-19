@@ -30,11 +30,28 @@ before(async () => {
 });
 after(async () => { await browser?.close(); if (server) await new Promise(resolve => server.close(resolve)); });
 
-async function setup(t, { source, mobile = false, owner = true, pathname = '/' } = {}) {
+async function setup(t, { source, mobile = false, owner = true, pathname = '/', canPublish = true } = {}) {
   const context = await browser.newContext({ viewport: mobile ? { width: 390, height: 844 } : { width: 1280, height: 900 } });
   t.after(() => context.close());
   let authenticated = owner;
-  await context.route('**/api/auth/session', route => route.fulfill({ json: { authenticated, configured: true, login: 'injaneity', expiresAt: Date.now() + 3600000 } }));
+  // A fake repository behind /api/content/* so publishing can be checked without GitHub.
+  const files = new Map(), commits = [];
+  let version = 0;
+  await context.route('**/api/auth/session', route => route.fulfill({ json: { authenticated, configured: true, login: 'injaneity', expiresAt: Date.now() + 3600000, canPublish } }));
+  await context.route('**/api/content/*', async route => {
+    const request = route.request(), slug = new URL(request.url()).pathname.split('/').pop();
+    if (!files.has(slug)) {
+      const file = path.resolve('src/content', `${slug}.md`);
+      if (existsSync(file)) files.set(slug, { source: await readFile(file, 'utf8'), sha: String(++version).padStart(40, '0') });
+    }
+    const current = files.get(slug);
+    if (request.method() === 'GET') return current ? route.fulfill({ json: current }) : route.fulfill({ status: 404, json: { error: 'page not found' } });
+    const body = request.postDataJSON();
+    if (current ? body.sha !== current.sha : body.sha) return route.fulfill({ status: 409, json: { error: 'the page changed elsewhere' } });
+    const next = { source: body.source, sha: String(++version).padStart(40, '0') };
+    files.set(slug, next); commits.push({ slug, ...next });
+    return route.fulfill({ json: { sha: next.sha } });
+  });
   if (source !== undefined) await context.addInitScript(({ source, prefix, activeKey }) => {
     if (!localStorage.getItem(prefix + 'fixture')) localStorage.setItem(prefix + 'fixture', JSON.stringify({ id: 'fixture', source, updated: '2026-09-28T00:00:00Z', page: '00-landing' }));
     if (!sessionStorage.getItem(activeKey)) sessionStorage.setItem(activeKey, 'fixture');
@@ -45,59 +62,63 @@ async function setup(t, { source, mobile = false, owner = true, pathname = '/' }
   page.on('console', message => { if (message.type() === 'error' && /plugin crashed|RangeError|TypeError/.test(message.text())) errors.push(message.text()); });
   page.on('request', request => requests.push(request.url()));
   t.after(() => assert.deepEqual(errors, []));
-  await page.goto(origin + pathname);
-  if (owner) await expect(page.getByRole('link', { name: 'edit', exact: true })).toBeVisible();
-  return { page, context, requests, expire: () => { authenticated = false; }, input: page.getByRole('textbox', { name: 'markdown', exact: true }) };
-}
-async function edit(page) {
-  await page.getByRole('link', { name: 'edit', exact: true }).click();
-  await expect(page.locator('.reader-content.is-editing')).toBeVisible();
+  await page.goto(origin + pathname + (source !== undefined ? '?draft=fixture' : ''));
+  if (owner) await expect(page.locator('.reader-content.is-editing')).toBeVisible();
+  return { page, context, requests, commits, files, expire: () => { authenticated = false; }, input: page.getByRole('textbox', { name: 'markdown', exact: true }) };
 }
 async function stored(page) {
   return page.evaluate(({ prefix, activeKey }) => JSON.parse(localStorage.getItem(prefix + sessionStorage.getItem(activeKey))).source, { prefix, activeKey });
 }
 async function metrics(page) {
+  await page.evaluate(() => document.fonts.ready);
   return page.locator('.reader-content > h1, .reader-content > p, .reader-header, .reader-footer').evaluateAll(nodes => nodes.map(node => {
     const rect = node.getBoundingClientRect(), css = getComputedStyle(node);
     return { text: node.textContent, x: rect.x, y: rect.y, width: rect.width, height: rect.height, font: css.font, filter: css.filter, lineHeight: css.lineHeight };
   }));
 }
+const withoutControls = rows => rows.map(({ text, ...row }) => ({ ...row, text: text.replace(/ · .*$/, '') }));
 
-test('edit stays on the reader with identical layout, then saves and resumes local changes', async t => {
-  const { page, input } = await setup(t);
-  await page.evaluate(() => document.fonts.ready);
-  const before = await metrics(page);
+test('owners edit the page they read, with no mode switch, and edits publish to the repository', async t => {
+  const visitor = await setup(t, { owner: false });
+  const before = await metrics(visitor.page);
+  const { page, input, commits } = await setup(t);
   const published = await readFile('src/content/00-landing.md', 'utf8');
-  await page.screenshot({ path: path.join(tmpdir(), 'portfolio-reader-before.png') });
-  await edit(page);
   assert.equal(new URL(page.url()).pathname, '/');
-  await expect(page.locator('.owner-controls')).toHaveText(' · stop editing · create');
-  assert.deepEqual(await metrics(page), before);
+  assert.equal(await page.getByRole('link', { name: /^(edit|stop editing)$/ }).count(), 0);
+  await expect(page.locator('.owner-controls a')).toHaveText('create');
+  assert.deepEqual(withoutControls(await metrics(page)), withoutControls(before));
   assert.equal(await page.locator('.cm-editor').count(), 0);
-  await page.screenshot({ path: path.join(tmpdir(), 'portfolio-reader-edit.png') });
-  await page.locator('.reader-content > p').last().click();
+  await page.screenshot({ path: path.join(tmpdir(), 'portfolio-reader-owner.png') });
+  await page.locator('.reader-content > p').last().click({ position: { x: 2, y: 2 } });
   await expect(input).toBeVisible();
   await page.keyboard.press('ControlOrMeta+End');
-  await page.keyboard.insertText(' Local addition.');
-  await expect.poll(() => stored(page)).toBe(published.trimEnd() + ' Local addition.\n');
+  await page.keyboard.insertText(' Live addition.');
+  await expect.poll(() => stored(page)).toBe(published.trimEnd() + ' Live addition.\n');
   await page.keyboard.press('ControlOrMeta+z');
   await expect.poll(() => stored(page)).toBe(published);
   await page.keyboard.press('ControlOrMeta+Shift+z');
   await page.keyboard.press('Escape');
-  await expect(page.locator('.reader-content > p').last()).toContainText('Local addition.');
-  await page.getByRole('link', { name: 'stop editing', exact: true }).click();
-  await expect(page.locator('.reader-content')).not.toHaveClass(/is-editing/);
-  await expect(page.locator('.reader-content > p').last()).toContainText('Local addition.');
+  await expect(page.locator('.reader-content > p').last()).toContainText('Live addition.');
+  await expect.poll(() => commits.length).toBe(1);
+  assert.equal(commits[0].slug, '00-landing');
+  assert.equal(commits[0].source, published.trimEnd() + ' Live addition.\n');
+  await expect(page.locator('.owner-status')).toContainText('published');
+  // A reload starts from the repository, so the edit is already there before any rebuild.
   await page.reload();
-  await expect(page.locator('.reader-content')).not.toContainText('Local addition.');
-  await edit(page);
-  await expect(page.locator('.reader-content')).toContainText('Local addition.');
+  await expect(page.locator('.reader-content.is-editing')).toBeVisible();
+  await expect(page.locator('.reader-content')).toContainText('Live addition.');
+});
+
+test('links still navigate on an editable page', async t => {
+  const { page } = await setup(t, { source: '# Links\n\nRead [the writing index](/writing/).' });
+  await page.getByRole('link', { name: 'the writing index' }).click();
+  await expect(page).toHaveURL(origin + '/writing/');
+  assert.equal(await page.locator('.cm-editor').count(), 0);
 });
 
 test('rendered media, tables and CRLF source survive paragraph editing and session expiry', async t => {
   const source = '---\r\ncreated: 2026-09-15\r\ncustom: keep me\r\n---\r\n\r\n# A quiet page\r\n\r\nA **bold** paragraph.\r\n\r\n![Logo](/logo.svg)\r\n\r\n| a | b |\r\n| - | - |\r\n| 1 | 2 |\r\n\r\n<video controls src="/demo.mp4"></video>\r\n\r\n<script>window.editorPwned=true</script>';
-  const { page, input, expire } = await setup(t, { source });
-  await edit(page);
+  const { page, input, expire, commits } = await setup(t, { source });
   await expect(page.locator('.reader-content figure img')).toBeVisible();
   await expect(page.locator('.reader-content table')).toBeVisible();
   await expect(page.locator('.reader-content video')).toBeVisible();
@@ -113,24 +134,29 @@ test('rendered media, tables and CRLF source survive paragraph editing and sessi
   await page.evaluate(() => dispatchEvent(new Event('focus')));
   await expect(page.locator('.inline-manuscript, .owner-controls, #editor-tools')).toHaveCount(0);
   await expect(page.locator('.reader-content h1')).toContainText("Hi! I'm Zane Chee.");
+  assert.equal(commits.length, 0);
 });
 
 test('mobile uses the reader layout, while signed-out visitors never load editor code', async t => {
-  const { page } = await setup(t, { mobile: true, pathname: '/computer-use/' });
-  await page.evaluate(() => document.fonts.ready);
-  const before = await metrics(page);
-  await edit(page);
-  assert.deepEqual(await metrics(page), before);
+  const visitor = await setup(t, { owner: false, mobile: true, pathname: '/computer-use/' });
+  const before = await metrics(visitor.page);
+  assert.equal(await visitor.page.locator('.owner-controls').count(), 0);
+  assert.equal(visitor.requests.some(url => /\/assets\/(inline-|editor-)|\/editor\/posts|\/api\/content/.test(url)), false);
+  const { page, input } = await setup(t, { mobile: true, pathname: '/computer-use/' });
+  const owner = await metrics(page);
+  assert.equal(owner.length, before.length);
+  await page.locator('.reader-content > p').first().click({ position: { x: 2, y: 2 } });
+  await expect(input).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(input).toHaveCount(0);
+  // Lazy images further down can settle meanwhile, so compare the header and the opening blocks.
+  assert.deepEqual((await metrics(page)).slice(0, 4), owner.slice(0, 4));
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await page.screenshot({ path: path.join(tmpdir(), 'portfolio-inline-mobile.png') });
-  const visitor = await setup(t, { owner: false, pathname: '/?edit=1' });
-  await expect(visitor.page.locator('.reader-content')).toBeVisible();
-  assert.equal(await visitor.page.locator('.owner-controls').count(), 0);
-  assert.equal(visitor.requests.some(url => /\/assets\/(inline-|editor-)|\/editor\/posts/.test(url)), false);
 });
 
-test('create uses the same article; failed storage remains recoverable as markdown', async t => {
-  const { page, input } = await setup(t);
+test('create publishes a new page from its title; failed storage remains recoverable as markdown', async t => {
+  const { page, input, commits } = await setup(t);
   await page.getByRole('link', { name: 'create', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Add paragraph' })).toBeVisible();
   await page.getByRole('button', { name: 'Add paragraph' }).click();
@@ -138,20 +164,37 @@ test('create uses the same article; failed storage remains recoverable as markdo
   await page.keyboard.insertText('# New page\n\n- first');
   await page.keyboard.press('Enter'); await page.keyboard.insertText('second');
   await expect.poll(() => stored(page)).toBe('# New page\n\n- first\n- second');
+  await page.keyboard.press('Escape');
+  await expect.poll(() => commits.length).toBe(1);
+  assert.equal(commits[0].slug, 'new-page');
+  assert.match(commits[0].source, /^---\ncreated: \d{4}-\d{2}-\d{2}\n---\n\n# New page\n\n- first\n- second$/);
+  await page.locator('.reader-content > ul').click();
+  await expect(input).toBeVisible();
   await page.evaluate(() => { Storage.prototype.setItem = () => { throw new DOMException('quota', 'QuotaExceededError'); }; });
+  await page.keyboard.press('ControlOrMeta+End');
   await page.keyboard.insertText(' unsaved');
   await expect(page.locator('#editor-error')).toContainText('could not save');
   await page.keyboard.press('ControlOrMeta+k');
   const pending = page.waitForEvent('download');
   await page.getByRole('button', { name: 'download markdown' }).click();
   const download = await pending;
-  assert.equal(await readFile(await download.path(), 'utf8'), '# New page\n\n- first\n- second unsaved');
+  assert.match(await readFile(await download.path(), 'utf8'), /# New page\n\n- first\n- second unsaved$/);
 });
 
-test('inline highlights add no word spacing and paragraph gaps stay consistent in edit and read modes', async t => {
+test('without a publishing token, edits stay as local drafts and say so', async t => {
+  const { page, input, requests } = await setup(t, { canPublish: false });
+  await expect(page.locator('.owner-status')).toHaveText('sign in again to publish');
+  await page.locator('.reader-content > p').last().click({ position: { x: 2, y: 2 } });
+  await page.keyboard.insertText('x');
+  await expect(input).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(2000);
+  assert.equal(requests.some(url => url.includes('/api/content/')), false);
+});
+
+test('inline highlights add no word spacing and paragraph gaps stay consistent', async t => {
   const source = '# Hi! I\'m Zane Chee.\n\nBuilding at [**cua (YC25)**](https://cua.ai), previously at **JPMorgan**, **SEA Group**, [**Hypotenuse AI (YC23)**](https://hypotenuse.ai).\n\nGraduating in December 2026. Find me on [GitHub](https://github.com/injaneity), [LinkedIn](https://linkedin.com/in/zanechee), [X](https://x.com/injaneity), & download my resume [here](!/zane.chee.resume.pdf).\n\nAlso a [**OpenAI Codex Ambassador**](https://developers.openai.com).';
   const { page } = await setup(t, { source });
-  await edit(page);
   const spacing = await page.locator('.reader-content > p').evaluateAll(nodes => nodes.map(node => {
     const css = getComputedStyle(node);
     return { bottom: parseFloat(css.marginBottom), expected: parseFloat(css.fontSize) * 0.55 };
@@ -163,9 +206,6 @@ test('inline highlights add no word spacing and paragraph gaps stay consistent i
   }));
   assert.ok(extraWidths.length >= 5);
   assert.ok(extraWidths.every(width => Math.abs(width) < 0.01));
-  const before = await metrics(page);
-  await page.getByRole('link', { name: 'stop editing', exact: true }).click();
-  assert.deepEqual(await metrics(page), before);
   await page.screenshot({ path: path.join(tmpdir(), 'portfolio-spacing.png') });
   assert.equal(await stored(page), source);
 });

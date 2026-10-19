@@ -1,4 +1,4 @@
-export type OwnerSession = { authenticated: boolean; configured: boolean; login?: string; expiresAt?: number };
+export type OwnerSession = { authenticated: boolean; configured: boolean; login?: string; expiresAt?: number; canPublish?: boolean };
 
 export async function getOwnerSession(): Promise<OwnerSession> {
   const response = await fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store',

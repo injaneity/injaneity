@@ -79,7 +79,7 @@ test('editor keeps accessible controls without repeated captions or starter copy
   const source = await readFile('src/editor/inline.ts', 'utf8');
   assert.doesNotMatch(source, /const welcome|the page is yours|live preview|min read|newDraft\('# untitled/);
   assert.match(source, /storageFailed = true/);
-  assert.match(source, /drafts\(\)\.find\(item => item.page === slug\)/);
+  assert.match(source, /drafts\(\)\.find\(item => item.page === page && item.published !== undefined\)/);
 });
 
 test('editable blocks use exactly the published renderer with lossless source offsets', async () => {

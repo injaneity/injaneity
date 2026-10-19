@@ -54,9 +54,9 @@ test('signed-out editor, nested source copies and missing configuration all fail
   }
 });
 
-test('only auth and editor invoke functions; sign-in is unlisted and missing pages have a 404 document', async () => {
+test('only auth, content and editor invoke functions; sign-in is unlisted and missing pages have a 404 document', async () => {
   const routes = JSON.parse(await readFile('dist/_routes.json', 'utf8'));
-  assert.deepEqual(routes.include, ['/api/auth', '/api/auth/*', '/editor', '/editor/*']);
+  assert.deepEqual(routes.include, ['/api/auth', '/api/auth/*', '/api/content/*', '/editor', '/editor/*']);
   assert.match(await readFile('dist/signin/index.html', 'utf8'), /noindex, nofollow/);
   assert.match(await readFile('dist/404.html', 'utf8'), /page not found/);
   for (const path of ['index.html', 'writing/index.html', 'sitemap.xml', 'llms.txt']) {
