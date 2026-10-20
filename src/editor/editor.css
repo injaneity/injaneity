@@ -1,19 +1,19 @@
 .reader-content.is-editing { position: relative; }
 .reader-content.is-editing [data-edit-from] { cursor: text; }
-.reader-content.is-editing [data-edit-from]:focus-visible { outline: 1px dashed var(--link-accent); outline-offset: 4px; }
+.reader-content.is-editing [data-edit-from]:focus-visible { outline: 1px dashed var(--md-link); outline-offset: 4px; }
 .reader-content .inline-manuscript { font-family: inherit; color: inherit; }
 .inline-manuscript .cm-editor { background: transparent; outline: none; font: inherit; }
 .inline-manuscript .cm-scroller { overflow: visible; font: inherit; }
-.inline-manuscript .cm-content { padding: 0; min-height: 1em; caret-color: var(--link-accent-hover); }
-.inline-manuscript .cm-line { padding: 0; font: inherit; text-align: inherit; overflow-wrap: anywhere; filter: url(#eink-dither); mix-blend-mode: screen; }
-.inline-manuscript .cm-cursor { border-left-color: var(--link-accent-hover); }
-.inline-manuscript .cm-selectionBackground { background: var(--link-wash); }
+.inline-manuscript .cm-content { padding: 0; min-height: 1em; caret-color: var(--md-link); }
+.inline-manuscript .cm-line { padding: 0; font: inherit; text-align: inherit; overflow-wrap: anywhere; }
+.inline-manuscript .cm-cursor { border-left-color: var(--md-link); }
+.inline-manuscript .cm-selectionBackground { background: var(--selected-bg); }
 .inline-manuscript .cm-placeholder { color: var(--muted); }
 .inline-manuscript .live-strong { font-weight: 700; }
 .inline-manuscript .live-emphasis { font-style: italic; }
 .inline-manuscript .live-strike { text-decoration: line-through; }
 .inline-manuscript .live-syntax { color: var(--muted); font-weight: 400; }
-.inline-manuscript .live-link { text-decoration: underline; text-decoration-color: var(--link-accent); text-underline-offset: 2px; }
+.inline-manuscript .live-link { text-decoration: underline; text-decoration-color: var(--md-link); text-underline-offset: 2px; }
 .inline-manuscript .live-code, .inline-manuscript .live-table, .inline-manuscript .live-inline-code { font-family: var(--code-font); font-size: 14px; text-align: left; }
 .inline-manuscript .live-h1 { font-size: 38px; line-height: 1.25; font-weight: 600; }
 .inline-manuscript .live-h2 { font-size: 27px; line-height: 1.3; font-weight: 600; }
@@ -23,25 +23,25 @@
 #editor-tools [hidden] { display: none !important; }
 #editor-tools { font: 13px/1.5 'Sohne Regular', system-ui, sans-serif; }
 #editor-tools button { font: inherit; color: inherit; border: 0; border-radius: 0; background: transparent; padding: 0.5rem 0; min-height: 40px; }
-#editor-tools button:hover { text-decoration: underline; text-underline-offset: 0.3em; text-decoration-color: var(--link-accent); }
-#editor-error { position: fixed; bottom: 4rem; left: 50%; transform: translateX(-50%); max-width: calc(100vw - 2rem); margin: 0; padding: 0.7rem 1rem; color: var(--error); background: var(--paper); font-size: 12px; z-index: 20; }
-#contents { color: var(--ink); border: 0; padding: 1.5rem 2rem; width: min(580px, calc(100vw - 2rem)); max-height: 85dvh; background: var(--paper); box-shadow: 0 12px 60px #0000008c; scrollbar-width: thin; }
-#contents::backdrop { background: #0000007a; }
+#editor-tools button:hover { text-decoration: underline; text-underline-offset: 0.3em; text-decoration-color: var(--md-link); }
+#editor-error { position: fixed; bottom: 4rem; left: 50%; transform: translateX(-50%); max-width: calc(100vw - 2rem); margin: 0; padding: 0.7rem 1rem; color: var(--error); background: var(--background); font-size: 12px; z-index: 20; }
+#contents { color: var(--text); padding: 1.5rem 2rem; width: min(580px, calc(100vw - 2rem)); max-height: 85dvh; background: var(--background); border: 1px solid var(--border-muted); scrollbar-width: thin; }
+#contents::backdrop { background: transparent; }
 .contents-header { display: flex; align-items: center; justify-content: space-between; }
 .contents-header h1 { margin: 0; font: 30px/1.25 'Newsreader', Georgia, serif; }
 #close-contents { min-width: 40px; font-size: 22px; }
 #contents-note { color: var(--muted); font-size: 11px; margin: 0.5rem 0; }
-.contents-actions { display: flex; flex-wrap: wrap; gap: 1rem; color: var(--link-accent-hover); font-size: 12px; }
+.contents-actions { display: flex; flex-wrap: wrap; gap: 1rem; color: var(--md-link); font-size: 12px; }
 #documents h2 { margin: 1.5rem 0 0.5rem; font: 11px/1.5 'Sohne Regular', system-ui, sans-serif; color: var(--muted); }
 #documents ul { list-style: none; padding: 0; margin: 0; }
 #documents a { display: block; padding: 0.5rem 0; text-decoration: none; color: inherit; font: 20px/1.4 'Newsreader', Georgia, serif; }
-#documents a:hover { text-decoration: underline; text-decoration-color: var(--link-accent); }
+#documents a:hover { text-decoration: underline; text-decoration-color: var(--md-link); }
 .page-details { margin-top: 1.5rem; font-size: 12px; color: var(--muted); }
 .page-details summary { cursor: pointer; }
-#metadata { display: block; width: 100%; min-height: 140px; margin-top: 0.7rem; padding: 0.7rem; background: var(--panel); color: var(--ink); border: 1px solid var(--rule); font: 12px/1.6 var(--code-font); }
+#metadata { display: block; width: 100%; min-height: 140px; margin-top: 0.7rem; padding: 0.7rem; background: var(--tool-pending-bg); color: var(--text); border: 1px solid var(--border-muted); font: 12px/1.6 var(--code-font); }
 #metadata[aria-invalid="true"] { border-color: var(--error); }
 #metadata-error { color: var(--error); }
 #owner-signout { margin-top: 1rem; font-size: 12px; color: var(--muted); }
 .owner-gate #signin-message { color: var(--muted); }
 .owner-gate [hidden] { display: none !important; }
-.owner-gate #signin-retry { padding: 0; border: 0; background: none; color: var(--ink); text-decoration: underline; text-decoration-color: var(--link-accent); text-decoration-thickness: 2px; text-underline-offset: 2px; }
+.owner-gate #signin-retry { padding: 0; border: 0; background: none; color: var(--text); text-decoration: underline; text-decoration-color: var(--md-link); text-decoration-thickness: 2px; text-underline-offset: 2px; }

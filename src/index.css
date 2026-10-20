@@ -11,27 +11,12 @@ body {
 }
 
 html {
-  background-color: var(--paper);
+  background-color: var(--background);
 }
 
 body {
-  color: var(--ink);
+  color: var(--text);
   background: transparent;
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  opacity: 0.14;
-  filter: grayscale(1) invert(1) sepia(0.4) contrast(0.9);
-  mix-blend-mode: screen;
-  pointer-events: none;
-  background-image: url('/images/sketch-backgrounds/joo-chiat.png');
-  background-position: center bottom;
-  background-repeat: no-repeat;
-  background-size: cover;
 }
 
 *,
@@ -59,15 +44,6 @@ button {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-/* Apply ordered e-ink dithering only to glyph-bearing elements. Filtering list
-   or quote containers would also texture their backgrounds as rectangles. */
-.reader-content > :is(h1, h2, h3, h4, h5, h6, p),
-.reader-content li,
-.reader-content blockquote > p {
-  filter: url(#eink-dither);
-  mix-blend-mode: screen;
 }
 
 .article-frame {
@@ -103,8 +79,8 @@ button {
 .reader-footer a { color: inherit; text-decoration: none; }
 
 .owner-controls { white-space: nowrap; }
-.reader-content .owner-controls a { font: inherit; color: var(--link-accent); background: none; text-decoration: none; padding: 0; margin: 0; }
-.reader-content .owner-controls a:hover { color: var(--link-accent-hover); text-decoration: underline; text-underline-offset: 0.2em; }
+.reader-content .owner-controls a { font: inherit; color: var(--md-link); background: none; text-decoration: none; padding: 0; margin: 0; }
+.reader-content .owner-controls a:hover { color: var(--md-link); text-decoration: underline; text-underline-offset: 0.2em; }
 
 .reader-content {
   box-sizing: border-box;
@@ -235,19 +211,19 @@ button {
 
 /* Text selection uses a quiet graphite wash. */
 ::selection {
-  background-color: var(--selection);
-  color: var(--ink);
+  background-color: var(--selected-bg);
+  color: var(--text);
 }
 
 ::-moz-selection {
-  background-color: var(--selection);
-  color: var(--ink);
+  background-color: var(--selected-bg);
+  color: var(--text);
 }
 
 /* Search results scrollbar - thin ink line on paper, no track */
 .search-results {
   scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar) transparent;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 
 .search-results::-webkit-scrollbar {
@@ -259,7 +235,7 @@ button {
 }
 
 .search-results::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbar);
+  background-color: var(--scrollbar-thumb);
   border-radius: 0;
 }
 
@@ -289,7 +265,7 @@ button {
 .reader-content {
   font-family: 'Newsreader', Georgia, 'Times New Roman', serif;
   font-optical-sizing: auto;
-  color: var(--ink);
+  color: var(--text);
   line-height: 1.48;
 }
 
@@ -300,7 +276,7 @@ button {
   line-height: 1.25;
   margin-top: 0;
   margin-bottom: 1.25rem;
-  color: var(--ink);
+  color: var(--md-heading);
 }
 
 .reader-content h2 {
@@ -310,7 +286,7 @@ button {
   line-height: 1.3;
   margin-top: 2.25rem;
   margin-bottom: 0.75rem;
-  color: var(--ink);
+  color: var(--md-heading);
 }
 
 .reader-content h3 {
@@ -320,7 +296,7 @@ button {
   line-height: 1.4;
   margin-top: 1.75rem;
   margin-bottom: 0.5rem;
-  color: var(--ink);
+  color: var(--md-heading);
 }
 
 .reader-content .writing-entry h2 {
@@ -336,8 +312,6 @@ button {
 }
 
 .reader-content .writing-entry :is(h2, p) {
-  filter: url(#eink-dither);
-  mix-blend-mode: screen;
 }
 
 .article-navigation {
@@ -351,26 +325,26 @@ button {
   left: 0.5rem;
   z-index: 100;
   padding: 0.5rem;
-  background: var(--paper);
-  color: var(--ink);
+  background: var(--background);
+  color: var(--text);
   transform: translateY(-200%);
 }
 
 .skip-link:focus { transform: none; }
-a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
 
 @media (prefers-reduced-motion: reduce) {
   .reader-content a { transition: none; }
 }
 
-/* Metadata subheading: used for the byline under the title and available in
-   markdown as `###### ...`. Bold segments render in graphite. */
+/* Metadata subheading, available in markdown as `###### ...`. Like every
+   heading it takes pi's mdHeading; bold segments stay in the heading colour. */
 .reader-content h6 {
   font-family: 'Sohne Regular', system-ui, sans-serif;
   font-size: 14px;
   font-weight: 400;
   line-height: 1.6;
-  color: var(--muted);
+  color: var(--md-heading);
   margin-top: 0;
   margin-bottom: 0.4rem;
 }
@@ -405,7 +379,6 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .reader-content h6 strong {
   font-family: 'Sohne Medium', system-ui, sans-serif;
   font-weight: 600;
-  color: var(--accent);
 }
 
 .reader-content p {
@@ -414,7 +387,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   line-height: 1.48;
   margin-top: 0;
   margin-bottom: 0.55em;
-  color: var(--ink);
+  color: var(--text);
   min-height: 1em;
   text-align: justify;
   hyphens: auto;
@@ -426,16 +399,16 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 }
 
 .reader-content a {
-  color: var(--ink);
+  color: var(--md-link);
   text-decoration: underline;
-  text-decoration-color: var(--link-accent);
+  text-decoration-color: var(--md-link);
   text-decoration-thickness: 2px;
   text-underline-offset: 2px;
   font-weight: 400;
   padding: 0.14em 0.16em;
   margin: 0 -0.16em;
   background-color: transparent;
-  background-image: linear-gradient(var(--link-wash), var(--link-wash));
+  background-image: linear-gradient(var(--selected-bg), var(--selected-bg));
   background-repeat: no-repeat;
   background-size: 100% 0%;
   background-position: 0 100%;
@@ -471,6 +444,10 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   list-style-type: decimal;
 }
 
+.reader-content li::marker {
+  color: var(--md-list-bullet);
+}
+
 .reader-content li {
   font-size: 17px;
   line-height: 1.48;
@@ -490,17 +467,13 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   border-radius: 0;
   font-size: 0.9em;
   font-family: var(--code-font);
-  color: var(--inline-code);
-}
-
-.reader-content pre code {
-  color: var(--ink);
+  color: var(--md-code);
 }
 
 .reader-content code::selection,
 .reader-content code *::selection {
-  background-color: var(--selection);
-  color: var(--ink);
+  background-color: var(--selected-bg);
+  color: var(--text);
 }
 
 .reader-content pre {
@@ -542,7 +515,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .reader-content .language-label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--muted);
+  color: var(--md-code-block-border);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   user-select: none;
@@ -551,7 +524,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 /* Copy button (top-right) */
 .reader-content .copy-button {
   padding: 0.25rem;
-  color: var(--muted);
+  color: var(--md-code-block-border);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -563,16 +536,22 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 }
 
 .reader-content .copy-button:hover {
-  color: var(--ink);
-  background: var(--panel);
+  color: var(--text);
+  background: var(--tool-pending-bg);
 }
 
-/* Syntax Highlighting Styles - Novmbr */
+/* Code blocks without a language are plain mdCodeBlock, as in pi; highlighted
+   ones start from the text colour. */
+.reader-content pre code:not(.hljs) {
+  color: var(--md-code-block);
+}
+
+/* Syntax Highlighting Styles - pi */
 .reader-content .hljs {
   display: block;
   overflow-x: auto;
   padding: 0;
-  color: var(--ink);
+  color: var(--text);
   background: transparent !important;
   border-radius: 0;
   font-family: var(--code-font);
@@ -588,7 +567,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .reader-content .hljs-keyword,
 .reader-content .hljs-name,
 .reader-content .hljs-selector-tag {
-  color: var(--code-keyword);
+  color: var(--syntax-keyword);
 }
 
 /* built_in class type */
@@ -597,7 +576,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .reader-content .hljs-title.class_,
 .reader-content .hljs-type,
 .reader-content .hljs-selector-class {
-  color: var(--code-type);
+  color: var(--syntax-type);
 }
 
 /* literal number */
@@ -605,7 +584,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .reader-content .hljs-number,
 .reader-content .hljs-symbol,
 .reader-content .hljs-bullet {
-  color: var(--code-number);
+  color: var(--syntax-number);
 }
 
 /* regexp string */
@@ -613,19 +592,19 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .reader-content .hljs-string,
 .reader-content .hljs-template-variable,
 .reader-content .hljs-meta-string {
-  color: var(--code-string);
+  color: var(--syntax-string);
 }
 
 /* subst */
 .reader-content .hljs-subst {
-  color: var(--ink);
+  color: var(--text);
 }
 
 /* comment doctag */
 .reader-content .hljs-comment,
 .reader-content .hljs-quote,
 .reader-content .hljs-doctag {
-  color: var(--code-comment);
+  color: var(--syntax-comment);
 }
 
 /* meta */
@@ -639,7 +618,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .reader-content .hljs-title.function_,
 .reader-content .hljs-title,
 .reader-content .hljs-section {
-  color: var(--code-function);
+  color: var(--syntax-function);
 }
 
 /* attr variable params */
@@ -648,28 +627,28 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .reader-content .hljs-variable,
 .reader-content .hljs-params,
 .reader-content .hljs-property {
-  color: var(--code-variable);
+  color: var(--syntax-variable);
 }
 
 /* operator */
 .reader-content .hljs-operator {
-  color: var(--code-operator);
+  color: var(--syntax-operator);
 }
 
 /* tag punctuation */
 .reader-content .hljs-tag,
 .reader-content .hljs-punctuation {
-  color: var(--code-punctuation);
+  color: var(--syntax-punctuation);
 }
 
 /* addition */
 .reader-content .hljs-addition {
-  color: var(--code-addition);
+  color: var(--tool-diff-added);
 }
 
 /* deletion */
 .reader-content .hljs-deletion {
-  color: var(--code-deletion);
+  color: var(--tool-diff-removed);
 }
 
 .reader-content .hljs-emphasis {
@@ -686,9 +665,10 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 
 .reader-content blockquote {
   border: 0;
-  padding: 0;
+  border-left: 2px solid var(--md-quote-border);
+  padding: 0 0 0 0.75rem;
   margin: 0.72rem 0;
-  color: var(--ink);
+  color: var(--md-quote);
   background: transparent;
 }
 
@@ -704,6 +684,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 
 .reader-content hr {
   display: none;
+  color: var(--md-hr);
 }
 
 /* Image with caption */
@@ -730,7 +711,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   width: 100%;
   height: auto;
   margin: 1rem 0;
-  background: #000;
+  background: var(--background);
 }
 
 /* Tables (GFM) */
@@ -743,7 +724,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 
 .reader-content th,
 .reader-content td {
-  border: 1px solid var(--rule);
+  border: 1px solid var(--text);
   padding: 0.5rem 0.75rem;
   text-align: left;
 }
@@ -771,7 +752,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   appearance: none;
   width: 18px;
   height: 18px;
-  border: 2px solid var(--ink);
+  border: 2px solid var(--text);
   border-radius: 0;
   pointer-events: none;
   position: relative;
@@ -793,7 +774,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   transform: translate(-50%, -60%) rotate(45deg);
   width: 5px;
   height: 10px;
-  border: solid var(--paper);
+  border: solid var(--background);
   border-width: 0 2px 2px 0;
 }
 
@@ -880,16 +861,16 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   width: 12rem;
   padding: 0.25rem 1.75rem 0.25rem 0;
   border: 0;
-  border-bottom: 2px solid var(--rule);
+  border-bottom: 2px solid var(--border-muted);
   outline: 0;
   background: transparent;
-  color: var(--ink);
+  color: var(--text);
   font-size: 0.875rem;
   transition: border-color 0.3s ease;
 }
 
 .search-input::placeholder {
-  color: var(--muted-soft);
+  color: var(--dim);
 }
 
 .search-input:focus {
@@ -899,11 +880,11 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .clear-button {
   position: absolute;
   right: 0.25rem;
-  color: var(--muted-soft);
+  color: var(--dim);
 }
 
 .clear-button:hover {
-  color: var(--ink);
+  color: var(--text);
 }
 
 .search-input:placeholder-shown + .clear-button {
@@ -939,12 +920,12 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 
 .search-panel::before {
   top: 0;
-  background: linear-gradient(to bottom, var(--paper), transparent);
+  background: linear-gradient(to bottom, var(--background), transparent);
 }
 
 .search-panel::after {
   bottom: 0;
-  background: linear-gradient(to top, var(--paper), transparent);
+  background: linear-gradient(to top, var(--background), transparent);
 }
 
 .search-panel.can-scroll-up::before,
@@ -973,7 +954,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 }
 
 .search-title {
-  color: var(--ink);
+  color: var(--text);
   font-size: 0.875rem;
   font-weight: 600;
   transition: color 0.2s ease;
@@ -1012,7 +993,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 }
 
 .corner-button[data-mode='top']:hover {
-  color: var(--accent-hover);
+  color: var(--text);
 }
 
 .corner-button[data-mode='source'] .corner-label {
@@ -1034,7 +1015,6 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   inset: 0;
   z-index: 80;
   pointer-events: none;
-  background: rgba(0, 0, 0, 0.35);
 }
 
 .search-control.is-open .search-input-shell {
@@ -1047,8 +1027,8 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   padding: 0.75rem 0.9rem;
   transform: translateX(-50%);
   overflow: visible;
-  background: var(--panel);
-  border: 1px solid var(--rule);
+  background: var(--tool-pending-bg);
+  border: 1px solid var(--border-muted);
 }
 
 .search-control.is-open .search-input-wrap,
@@ -1073,8 +1053,8 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   margin: 0;
   padding: 0.25rem 0.9rem 0.5rem;
   transform: translateX(-50%);
-  background: var(--panel);
-  border: 1px solid var(--rule);
+  background: var(--tool-pending-bg);
+  border: 1px solid var(--border-muted);
   border-top: 0;
 }
 
