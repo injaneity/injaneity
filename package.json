@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc -b",
-    "test:site": "node --test scripts/site-metadata.test.mjs scripts/editor.test.mjs scripts/auth.test.mjs scripts/pages-auth.test.mjs scripts/auth-runtime.test.mjs scripts/content.test.mjs",
+    "theme": "node scripts/theme.mjs",
+    "test:site": "node --test scripts/site-metadata.test.mjs scripts/theme.test.mjs scripts/editor.test.mjs scripts/auth.test.mjs scripts/pages-auth.test.mjs scripts/auth-runtime.test.mjs scripts/content.test.mjs",
     "test:editor": "node --test scripts/editor-browser.test.mjs"
   },
   "devDependencies": {
