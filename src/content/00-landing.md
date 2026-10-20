@@ -12,6 +12,6 @@ I'm building at [**cua (YC25)**](cua.ai), formerly at **JPMorgan**, **SEA Group*
 
 
 
-I maintain [**pi-computer-use**](https://github.com/injaneity/pi-computer-use), my open source extension for [Pi Coding Agent](pi.dev).
+maintain [**pi-computer-use**](https://github.com/injaneity/pi-computer-use), my open source extension for [Pi Coding Agent](pi.dev).
 
 You can find me on [GitHub](https://github.com/injaneity), [LinkedIn](https://linkedin.com/in/zanechee), [X](https://x.com/injaneity), & download my resume [here](!/zane.chee.resume.pdf).
