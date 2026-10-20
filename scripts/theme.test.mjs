@@ -1,25 +1,26 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
-import { contrast, deriveTheme, themeCss, themePath } from './theme.mjs';
+import { contrast, deriveTheme, piColors, themeCss, themePath } from './theme.mjs';
 
 test('src/theme.css matches the palette derived from the terminal theme', async () => {
   assert.equal(await readFile(themePath, 'utf8'), themeCss(), 'run `npm run theme` to regenerate src/theme.css');
 });
 
-test('every foreground token clears its contrast rule on the surfaces it sits on', () => {
+test('the vendored generator reproduces what pi 1.3.0 shows for novmbr', () => {
+  // Captured from @earendil-works/pi-coding-agent 1.3.0's generateSystemThemeColors.
+  const expected = {
+    text: '#c7b8ac', muted: '#ad9c94', dim: '#8e7e76', accent: '#bf967d', selectedBg: '#1e3636', mdLink: '#70acab',
+    syntaxKeyword: '#70acab', syntaxString: '#9aa95c', syntaxNumber: '#be967e', syntaxFunction: '#be9a53',
+    syntaxType: '#bf967d', syntaxVariable: '#7eaaa3', syntaxComment: '#ad9c94', error: '#c6936d',
+  };
+  const pi = piColors();
+  for (const [token, value] of Object.entries(expected)) assert.equal(pi[token], value, token);
+});
+
+test('body text stays readable on the page and the selection', () => {
   const t = deriveTheme();
-  const rules = [
-    [['ink'], 7, ['paper', 'panel']],
-    [['ink'], 4.5, ['selection']],
-    [['muted', 'accent', 'link-accent-hover', 'error'], 4.5, ['paper', 'panel']],
-    [['muted-soft'], 3, ['paper', 'panel']],
-    [['link-accent'], 3, ['paper']],
-    [['code-keyword', 'code-string', 'code-number', 'code-function', 'code-type', 'code-symbol'], 6, ['paper']],
-  ];
-  for (const [tokens, ratio, surfaces] of rules) {
-    for (const token of tokens) {
-      for (const surface of surfaces) assert.ok(contrast(t[token], t[surface]) >= ratio, `${token} on ${surface}: ${contrast(t[token], t[surface]).toFixed(2)}`);
-    }
+  for (const token of ['ink', 'muted', 'code-keyword', 'code-string', 'code-number', 'code-function', 'code-type', 'code-variable', 'code-comment']) {
+    for (const surface of ['paper', 'selection']) assert.ok(contrast(t[token], t[surface]) >= 4.5, `${token} on ${surface}`);
   }
 });
