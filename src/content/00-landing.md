@@ -7,7 +7,7 @@ modified: 2026-06-13
 
 # Hi! I'm Zane Chee.
 
-Software engineer at [**cua (YC25)**](cua.ai), formerly at **JPMorgan**, **SEA Group**, [**Hypotenuse AI (YC23)**](hypotenuse.ai).
+Software engineer & apprentice of the mystic arts at [**cua (YC25)**](cua.ai), formerly interned at **JPMorgan**, **SEA Group**, [**Hypotenuse AI (YC23)**](hypotenuse.ai).
 
 
 
