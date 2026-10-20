@@ -137,7 +137,7 @@ test('rendered media, tables and CRLF source survive paragraph editing and sessi
   assert.equal(commits.length, 0);
 });
 
-test('mobile uses the reader layout, while signed-out visitors never load editor code', async t => {
+test('mobile uses the reader layout, while signed-out visitors load no editor code before they click', async t => {
   const visitor = await setup(t, { owner: false, mobile: true, pathname: '/computer-use/' });
   const before = await metrics(visitor.page);
   assert.equal(await visitor.page.locator('.owner-controls').count(), 0);
@@ -153,6 +153,24 @@ test('mobile uses the reader layout, while signed-out visitors never load editor
   assert.deepEqual((await metrics(page)).slice(0, 4), owner.slice(0, 4));
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await page.screenshot({ path: path.join(tmpdir(), 'portfolio-inline-mobile.png') });
+});
+
+test('visitors can edit any page, but nothing is stored or published and a reload restores it', async t => {
+  const { page, input, requests } = await setup(t, { owner: false, pathname: '/computer-use/' });
+  assert.equal(requests.some(url => /\/assets\/inline-/.test(url)), false);
+  const first = page.locator('.reader-content > p').first();
+  const original = await first.textContent();
+  await first.click({ position: { x: 2, y: 2 } });
+  await expect(input).toBeVisible();
+  await page.keyboard.press('ControlOrMeta+End');
+  await page.keyboard.insertText(' Visitor scribble.');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.reader-content > p').first()).toContainText('Visitor scribble.');
+  assert.equal(await page.locator('.owner-controls').count(), 0);
+  assert.equal(await page.evaluate(() => localStorage.length), 0);
+  assert.equal(requests.some(url => url.includes('/api/content/')), false);
+  await page.reload();
+  await expect(page.locator('.reader-content > p').first()).toHaveText(original);
 });
 
 test('create publishes a new page from its title; failed storage remains recoverable as markdown', async t => {

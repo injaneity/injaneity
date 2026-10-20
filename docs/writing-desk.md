@@ -1,6 +1,6 @@
 # writing desk
 
-after signing in at `/signin/`, every page is editable as you read it. there is no edit or read mode. click a paragraph, heading, list, image, or table to edit its markdown in place; escape or moving focus renders that block again. links, buttons, and video controls keep working, so click beside a link to edit its paragraph.
+every page is editable as you read it, by anyone. there is no edit or read mode. visitors who are not signed in can change a page in place, but their edits live only in memory: nothing is stored, nothing is published, and a reload brings back the real page. their first click loads the editor, so reading stays as light as before. after signing in at `/signin/`, your edits are also saved and published, as below. click a paragraph, heading, list, image, or table to edit its markdown in place; escape or moving focus renders that block again. links, buttons, and video controls keep working, so click beside a link to edit its paragraph.
 
 edits publish to the site. when a block is finished (or after 30 seconds of continuous typing, `cmd+s`, switching tabs, or closing the page), the page's markdown is committed to `src/content/<slug>.md` on `main`, and cloudflare pages redeploys it. the byline shows the state: **editing**, **publishing…**, **published · live after the next deploy**, or **not published** with the reason. each open loads the page's source from github, not the last build, so reloading shows your edit even before the deploy finishes. if the page changed on github since you opened it, the save stops with a conflict instead of overwriting; your version stays in the drafts list.
 
@@ -16,7 +16,7 @@ the writing index is generated during the build. its `<!-- posts -->` marker is 
 
 ## implementation
 
-- `src/main.ts` loads editing as soon as the owner session is verified. signed-out reading does not download the editing code.
+- `src/main.ts` loads editing as soon as the owner session is verified, and for visitors on their first click into the article (`startVisitorEditor`). signed-out reading does not download the editing code until then. page source is served publicly from `/source/<slug>.md`.
 - `src/editor/inline.ts` manages owner checks, drafts, frontmatter, local saves, publishing, downloads, and conflict copies.
 - `src/editor/article-editor.ts` renders through `src/lib/markdown.mjs`, with source offsets on top-level blocks. only the active block mounts `src/editor/live-markdown.ts`; the rest remains the actual article html. finishing a block does not serialize the rendered dom back into markdown.
 - `/editor/` remains owner-protected for old bookmarks and redirects into the article. its source endpoints stay owner-protected. the separate writing desk is removed.
