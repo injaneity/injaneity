@@ -247,7 +247,7 @@ button {
 /* Search results scrollbar - thin ink line on paper, no track */
 .search-results {
   scrollbar-width: thin;
-  scrollbar-color: var(--selection) transparent;
+  scrollbar-color: var(--scrollbar) transparent;
 }
 
 .search-results::-webkit-scrollbar {
@@ -259,7 +259,7 @@ button {
 }
 
 .search-results::-webkit-scrollbar-thumb {
-  background-color: var(--selection);
+  background-color: var(--scrollbar);
   border-radius: 0;
 }
 
@@ -490,6 +490,11 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   border-radius: 0;
   font-size: 0.9em;
   font-family: var(--code-font);
+  color: var(--inline-code);
+}
+
+.reader-content pre code {
+  color: var(--ink);
 }
 
 .reader-content code::selection,
@@ -576,87 +581,97 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   margin: 0;
 }
 
-/* Comments - muted, italic */
-.reader-content .hljs-comment,
-.reader-content .hljs-quote {
-  color: var(--muted);
-  font-style: italic;
-}
+/* Token mapping mirrors pi's highlight theme (buildCliHighlightTheme): same
+   hljs scopes, same pi tokens, no extra bold or italics. */
 
-/* Keywords - rust, bold */
+/* keyword name */
 .reader-content .hljs-keyword,
-.reader-content .hljs-selector-tag,
-.reader-content .hljs-literal,
-.reader-content .hljs-section {
+.reader-content .hljs-name,
+.reader-content .hljs-selector-tag {
   color: var(--code-keyword);
-  font-weight: 600;
 }
 
-/* Strings - green */
+/* built_in class type */
+.reader-content .hljs-built_in,
+.reader-content .hljs-class,
+.reader-content .hljs-title.class_,
+.reader-content .hljs-type,
+.reader-content .hljs-selector-class {
+  color: var(--code-type);
+}
+
+/* literal number */
+.reader-content .hljs-literal,
+.reader-content .hljs-number,
+.reader-content .hljs-symbol,
+.reader-content .hljs-bullet {
+  color: var(--code-number);
+}
+
+/* regexp string */
+.reader-content .hljs-regexp,
 .reader-content .hljs-string,
 .reader-content .hljs-template-variable,
-.reader-content .hljs-addition,
 .reader-content .hljs-meta-string {
   color: var(--code-string);
 }
 
-/* Numbers - rose */
-.reader-content .hljs-number {
-  color: var(--code-number);
-}
-
-/* Functions - gold */
-.reader-content .hljs-function,
-.reader-content .hljs-title.function_,
-.reader-content .hljs-title {
-  color: var(--code-function);
-  font-weight: 500;
-}
-
-/* Types and built-ins - teal */
-.reader-content .hljs-type,
-.reader-content .hljs-built_in,
-.reader-content .hljs-selector-class,
-.reader-content .hljs-doctag {
-  color: var(--code-type);
-}
-
-/* Variables and attributes - rose */
-.reader-content .hljs-variable,
-.reader-content .hljs-attr,
-.reader-content .hljs-params,
-.reader-content .hljs-property,
-.reader-content .hljs-attribute {
-  color: var(--code-number);
-}
-
-/* Class names - teal */
-.reader-content .hljs-title.class_,
-.reader-content .hljs-class,
-.reader-content .hljs-title.class {
-  color: var(--code-type);
-}
-
-/* Operators and punctuation - default foreground */
-.reader-content .hljs-operator,
-.reader-content .hljs-punctuation {
+/* subst */
+.reader-content .hljs-subst {
   color: var(--ink);
 }
 
-/* Tags in markup - rust */
-.reader-content .hljs-tag,
-.reader-content .hljs-name,
-.reader-content .hljs-selector-id {
-  color: var(--code-keyword);
+/* comment doctag */
+.reader-content .hljs-comment,
+.reader-content .hljs-quote,
+.reader-content .hljs-doctag {
+  color: var(--code-comment);
 }
 
-/* Meta and annotations - muted */
+/* meta */
 .reader-content .hljs-meta,
 .reader-content .hljs-meta-keyword {
   color: var(--muted);
 }
 
-/* Emphasis */
+/* function title */
+.reader-content .hljs-function,
+.reader-content .hljs-title.function_,
+.reader-content .hljs-title,
+.reader-content .hljs-section {
+  color: var(--code-function);
+}
+
+/* attr variable params */
+.reader-content .hljs-attr,
+.reader-content .hljs-attribute,
+.reader-content .hljs-variable,
+.reader-content .hljs-params,
+.reader-content .hljs-property {
+  color: var(--code-variable);
+}
+
+/* operator */
+.reader-content .hljs-operator {
+  color: var(--code-operator);
+}
+
+/* tag punctuation */
+.reader-content .hljs-tag,
+.reader-content .hljs-punctuation {
+  color: var(--code-punctuation);
+}
+
+/* addition */
+.reader-content .hljs-addition {
+  color: var(--code-addition);
+}
+
+/* deletion */
+.reader-content .hljs-deletion {
+  color: var(--code-deletion);
+}
+
 .reader-content .hljs-emphasis {
   font-style: italic;
 }
@@ -665,16 +680,8 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   font-weight: 700;
 }
 
-/* Regular expressions - green, like strings */
-.reader-content .hljs-regexp {
-  color: var(--code-string);
-}
-
-/* Symbols - teal */
-.reader-content .hljs-symbol,
-.reader-content .hljs-bullet,
 .reader-content .hljs-link {
-  color: var(--code-symbol);
+  text-decoration: underline;
 }
 
 .reader-content blockquote {
