@@ -7,7 +7,7 @@ modified: 2026-06-13
 
 # Hi! I'm Zane Chee.
 
-Building software at [**cua (YC25)**](cua.ai), formerly at **JPMorgan**, **SEA Group**, & [**Hypotenuse AI (YC23)**](hypotenuse.ai).
+I'm building at [**cua (YC25)**](cua.ai), formerly at **JPMorgan**, **SEA Group**, & [**Hypotenuse AI (YC23)**](hypotenuse.ai). In my free time, I 
 
 
 
