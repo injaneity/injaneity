@@ -1,12 +1,17 @@
-/* E-reader paper base tone; the shader overlay adds grain on top */
+/* Novmbr palette: warm dark paper with parchment ink */
 :root {
-  --paper: #ebe9df;
-  --ink: #252722;
-  --accent: #555851;
-  --accent-soft: #c2c3bc;
-  --accent-hover: #30322e;
-  --link-accent: #8fa99f;
-  --link-accent-hover: #587568;
+  color-scheme: dark;
+  --paper: #241d1a;
+  --ink: #c7b8ac;
+  --muted: #8f8177;
+  --muted-soft: #6f6259;
+  --rule: #3d332e;
+  --accent: #cca75f;
+  --accent-soft: #5d4e47;
+  --accent-hover: #e0c88f;
+  --link-accent: #2f7d7c;
+  --link-accent-hover: #52877f;
+  --code-font: 'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 }
 
 html,
@@ -29,10 +34,10 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: 0;
-  opacity: 0.3;
-  filter: grayscale(1) sepia(0.05) contrast(0.76) brightness(1.08);
+  opacity: 0.14;
+  filter: grayscale(1) invert(1) sepia(0.4) contrast(0.9);
+  mix-blend-mode: screen;
   pointer-events: none;
-  background-color: var(--paper);
   background-image: url('/images/sketch-backgrounds/joo-chiat.png');
   background-position: center bottom;
   background-repeat: no-repeat;
@@ -72,7 +77,7 @@ button {
 .reader-content li,
 .reader-content blockquote > p {
   filter: url(#eink-dither);
-  mix-blend-mode: multiply;
+  mix-blend-mode: screen;
 }
 
 .article-frame {
@@ -87,7 +92,7 @@ button {
 .reader-header {
   padding: 2rem 1rem 1.5rem;
   text-align: center;
-  color: #5f625b;
+  color: var(--muted);
   font: 13px/1 'Sohne Regular', system-ui, sans-serif;
   letter-spacing: 0.08em;
 }
@@ -102,7 +107,7 @@ button {
   padding: 1rem 1rem 2rem;
   font: 13px/1 'Sohne Regular', system-ui, sans-serif;
   letter-spacing: 0.08em;
-  color: #5f625b;
+  color: var(--muted);
 }
 
 .reader-footer a { color: inherit; text-decoration: none; }
@@ -183,7 +188,7 @@ button {
     transform: translateX(-50%);
     align-items: center;
     justify-content: space-between;
-    color: #5f625b;
+    color: var(--muted);
     font-family: 'Sohne Regular', system-ui, sans-serif;
     font-size: 13px;
     line-height: 1;
@@ -241,18 +246,18 @@ button {
 /* Text selection uses a quiet graphite wash. */
 ::selection {
   background-color: var(--accent-soft);
-  color: #1F1F1F;
+  color: var(--ink);
 }
 
 ::-moz-selection {
   background-color: var(--accent-soft);
-  color: #1F1F1F;
+  color: var(--ink);
 }
 
 /* Search results scrollbar - thin ink line on paper, no track */
 .search-results {
   scrollbar-width: thin;
-  scrollbar-color: #c9c4b6 transparent;
+  scrollbar-color: var(--accent-soft) transparent;
 }
 
 .search-results::-webkit-scrollbar {
@@ -264,12 +269,12 @@ button {
 }
 
 .search-results::-webkit-scrollbar-thumb {
-  background-color: #c9c4b6;
+  background-color: var(--accent-soft);
   border-radius: 0;
 }
 
 .search-results::-webkit-scrollbar-thumb:hover {
-  background-color: #a8a294;
+  background-color: var(--muted);
 }
 
 /* Sohne Font Declarations */
@@ -335,14 +340,14 @@ button {
 
 .reader-content .writing-date {
   font: 14px/1.6 'Sohne Regular', system-ui, sans-serif;
-  color: #6b7280;
+  color: var(--muted);
   margin-bottom: 0.4rem;
   text-align: left;
 }
 
 .reader-content .writing-entry :is(h2, p) {
   filter: url(#eink-dither);
-  mix-blend-mode: multiply;
+  mix-blend-mode: screen;
 }
 
 .article-navigation {
@@ -375,7 +380,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   font-size: 14px;
   font-weight: 400;
   line-height: 1.6;
-  color: #6b7280;
+  color: var(--muted);
   margin-top: 0;
   margin-bottom: 0.4rem;
 }
@@ -383,7 +388,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .reader-content .article-byline {
   margin: 0 0 1.5rem;
   font: 11px/1.6 'Sohne Regular', system-ui, sans-serif;
-  color: #5f625b;
+  color: var(--muted);
   letter-spacing: 0.04em;
   text-align: left;
   text-transform: lowercase;
@@ -440,7 +445,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   padding: 0.14em 0.16em;
   margin: 0 -0.16em;
   background-color: transparent;
-  background-image: linear-gradient(rgba(143, 169, 159, 0.34), rgba(143, 169, 159, 0.34));
+  background-image: linear-gradient(rgba(82, 135, 127, 0.34), rgba(82, 135, 127, 0.34));
   background-repeat: no-repeat;
   background-size: 100% 0%;
   background-position: 0 100%;
@@ -494,7 +499,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   padding: 0;
   border-radius: 0;
   font-size: 0.9em;
-  font-family: 'Monaco', 'Courier New', monospace;
+  font-family: var(--code-font);
 }
 
 .reader-content code::selection,
@@ -508,7 +513,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   padding: 0;
   overflow-x: auto;
   margin: 0;
-  font-family: 'Monaco', 'Courier New', monospace;
+  font-family: var(--code-font);
 }
 
 .reader-content pre code {
@@ -542,7 +547,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .reader-content .language-label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #6b6b6b;
+  color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   user-select: none;
@@ -551,7 +556,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 /* Copy button (top-right) */
 .reader-content .copy-button {
   padding: 0.25rem;
-  color: #6b6b6b;
+  color: var(--muted);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -563,102 +568,102 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 }
 
 .reader-content .copy-button:hover {
-  color: #1f1f1f;
-  background: rgba(0, 0, 0, 0.05);
+  color: var(--ink);
+  background: rgba(199, 184, 172, 0.08);
 }
 
-/* Syntax Highlighting Styles - VSCode Light Plus */
+/* Syntax Highlighting Styles - Novmbr */
 .reader-content .hljs {
   display: block;
   overflow-x: auto;
   padding: 0;
-  color: #1f1f1f;
+  color: var(--ink);
   background: transparent !important;
   border-radius: 0;
-  font-family: 'Monaco', 'Courier New', monospace;
+  font-family: var(--code-font);
   font-size: 14px;
   line-height: 1.5;
   margin: 0;
 }
 
-/* Comments - green, italic */
+/* Comments - muted, italic */
 .reader-content .hljs-comment,
 .reader-content .hljs-quote {
-  color: #008000;
+  color: var(--muted);
   font-style: italic;
 }
 
-/* Keywords - blue, bold */
+/* Keywords - rust, bold */
 .reader-content .hljs-keyword,
 .reader-content .hljs-selector-tag,
 .reader-content .hljs-literal,
 .reader-content .hljs-section {
-  color: #0000FF;
+  color: #c27a40;
   font-weight: 600;
 }
 
-/* Strings - red/brown */
+/* Strings - green */
 .reader-content .hljs-string,
 .reader-content .hljs-template-variable,
 .reader-content .hljs-addition,
 .reader-content .hljs-meta-string {
-  color: #A31515;
+  color: #9dac5f;
 }
 
-/* Numbers - teal/green */
+/* Numbers - rose */
 .reader-content .hljs-number {
-  color: #098658;
+  color: #b5896e;
 }
 
-/* Functions - brown/gold */
+/* Functions - gold */
 .reader-content .hljs-function,
 .reader-content .hljs-title.function_,
 .reader-content .hljs-title {
-  color: #795E26;
+  color: #cca75f;
   font-weight: 500;
 }
 
-/* Types and built-ins - cyan/blue */
+/* Types and built-ins - teal */
 .reader-content .hljs-type,
 .reader-content .hljs-built_in,
 .reader-content .hljs-selector-class,
 .reader-content .hljs-doctag {
-  color: #267F99;
+  color: #52877f;
 }
 
-/* Variables and attributes - dark blue */
+/* Variables and attributes - rose */
 .reader-content .hljs-variable,
 .reader-content .hljs-attr,
 .reader-content .hljs-params,
 .reader-content .hljs-property,
 .reader-content .hljs-attribute {
-  color: #001080;
+  color: #b5896e;
 }
 
-/* Class names - cyan */
+/* Class names - teal */
 .reader-content .hljs-title.class_,
 .reader-content .hljs-class,
 .reader-content .hljs-title.class {
-  color: #267F99;
+  color: #52877f;
 }
 
 /* Operators and punctuation - default foreground */
 .reader-content .hljs-operator,
 .reader-content .hljs-punctuation {
-  color: #1f1f1f;
+  color: var(--ink);
 }
 
-/* Tags in markup - blue */
+/* Tags in markup - rust */
 .reader-content .hljs-tag,
 .reader-content .hljs-name,
 .reader-content .hljs-selector-id {
-  color: #0000FF;
+  color: #c27a40;
 }
 
-/* Meta and annotations - gray */
+/* Meta and annotations - muted */
 .reader-content .hljs-meta,
 .reader-content .hljs-meta-keyword {
-  color: #808080;
+  color: var(--muted);
 }
 
 /* Emphasis */
@@ -670,16 +675,16 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   font-weight: 700;
 }
 
-/* Regular expressions - dark red */
+/* Regular expressions - rust */
 .reader-content .hljs-regexp {
-  color: #811F3F;
+  color: #9f6434;
 }
 
-/* Symbols - blue */
+/* Symbols - teal */
 .reader-content .hljs-symbol,
 .reader-content .hljs-bullet,
 .reader-content .hljs-link {
-  color: #0000FF;
+  color: #c27a40;
 }
 
 .reader-content blockquote {
@@ -714,12 +719,11 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   max-width: 100%;
   height: auto;
   display: block;
-  mix-blend-mode: multiply;
 }
 
 .reader-content .image-node figcaption {
   font-size: 14px;
-  color: #7c7c7c;
+  color: var(--muted);
   text-align: center;
   margin-top: 0.35rem;
 }
@@ -729,7 +733,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   width: 100%;
   height: auto;
   margin: 1rem 0;
-  background: var(--ink);
+  background: #000;
 }
 
 /* Tables (GFM) */
@@ -742,7 +746,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 
 .reader-content th,
 .reader-content td {
-  border: 1px solid #ddd8cc;
+  border: 1px solid var(--rule);
   padding: 0.5rem 0.75rem;
   text-align: left;
 }
@@ -792,7 +796,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   transform: translate(-50%, -60%) rotate(45deg);
   width: 5px;
   height: 10px;
-  border: solid white;
+  border: solid var(--paper);
   border-width: 0 2px 2px 0;
 }
 
@@ -829,7 +833,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #7c7c7c;
+  color: var(--muted);
   transition: color 0.3s ease;
 }
 
@@ -879,7 +883,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   width: 12rem;
   padding: 0.25rem 1.75rem 0.25rem 0;
   border: 0;
-  border-bottom: 2px solid #d1d5db;
+  border-bottom: 2px solid var(--rule);
   outline: 0;
   background: transparent;
   color: var(--ink);
@@ -888,7 +892,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 }
 
 .search-input::placeholder {
-  color: #9ca3af;
+  color: var(--muted-soft);
 }
 
 .search-input:focus {
@@ -898,11 +902,11 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .clear-button {
   position: absolute;
   right: 0.25rem;
-  color: #9ca3af;
+  color: var(--muted-soft);
 }
 
 .clear-button:hover {
-  color: #4b5563;
+  color: var(--ink);
 }
 
 .search-input:placeholder-shown + .clear-button {
@@ -938,12 +942,12 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 
 .search-panel::before {
   top: 0;
-  background: linear-gradient(to bottom, #FAF7F0, transparent);
+  background: linear-gradient(to bottom, var(--paper), transparent);
 }
 
 .search-panel::after {
   bottom: 0;
-  background: linear-gradient(to top, #FAF7F0, transparent);
+  background: linear-gradient(to top, var(--paper), transparent);
 }
 
 .search-panel.can-scroll-up::before,
@@ -972,7 +976,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 }
 
 .search-title {
-  color: #111827;
+  color: var(--ink);
   font-size: 0.875rem;
   font-weight: 600;
   transition: color 0.2s ease;
@@ -984,7 +988,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 
 .search-path {
   margin-top: 0.125rem;
-  color: #6b7280;
+  color: var(--muted);
   font-size: 0.75rem;
 }
 
@@ -992,7 +996,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #7c7c7c;
+  color: var(--muted);
   transition: color 0.3s ease;
   font-size: 0.875rem;
   line-height: 1.25rem;
@@ -1033,7 +1037,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   inset: 0;
   z-index: 80;
   pointer-events: none;
-  background: rgba(37, 39, 34, 0.08);
+  background: rgba(0, 0, 0, 0.35);
 }
 
 .search-control.is-open .search-input-shell {
@@ -1046,8 +1050,8 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   padding: 0.75rem 0.9rem;
   transform: translateX(-50%);
   overflow: visible;
-  background: rgba(235, 233, 223, 0.97);
-  border: 1px solid rgba(37, 39, 34, 0.24);
+  background: rgba(36, 29, 26, 0.97);
+  border: 1px solid rgba(199, 184, 172, 0.2);
 }
 
 .search-control.is-open .search-input-wrap,
@@ -1072,8 +1076,8 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   margin: 0;
   padding: 0.25rem 0.9rem 0.5rem;
   transform: translateX(-50%);
-  background: rgba(235, 233, 223, 0.97);
-  border: 1px solid rgba(37, 39, 34, 0.24);
+  background: rgba(36, 29, 26, 0.97);
+  border: 1px solid rgba(199, 184, 172, 0.2);
   border-top: 0;
 }
 
