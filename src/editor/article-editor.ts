@@ -128,6 +128,10 @@ export function createArticleEditor(article: HTMLElement, changed: () => void, n
     },
     finish,
     focus() { (active?.editor.view.contentDOM || article.querySelector<HTMLElement>('[data-edit-from], .append-paragraph'))?.focus(); },
+    async editIndex(index: number) {
+      const block = article.children[index] as HTMLElement | undefined;
+      if (block?.dataset.editFrom) await activate(Number(block.dataset.editFrom), Number(block.dataset.editTo));
+    },
     async setMetadata(details: Metadata) { metadata = details; if (!active) await paint(); },
     destroy() { ++generation; enabled = false; commit(); article.classList.remove('is-editing'); article.removeEventListener('click', click); article.removeEventListener('keydown', keyboard); },
   };

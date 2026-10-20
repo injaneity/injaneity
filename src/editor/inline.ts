@@ -58,7 +58,7 @@ export async function startInlineEditor(slug: string, create: boolean, renderCon
     } catch { canPublish = false; }
   }
   if (page && !remote && !explicit) {
-    const response = await fetch(`/editor/posts/${encodeURIComponent(page)}.md`, { cache: 'no-store' });
+    const response = await fetch(`/source/${encodeURIComponent(page)}.md`, { cache: 'no-store' });
     if (!response.ok) throw new Error('Could not open this page');
     const source = await response.text();
     remote = { source, sha: '' };
@@ -242,7 +242,7 @@ export async function startInlineEditor(slug: string, create: boolean, renderCon
   addEventListener('pagehide', publishOnExit, options);
   document.addEventListener('visibilitychange', () => { if (document.hidden) { save(); if (pending(current)) void publish(); } }, options);
   addEventListener('beforeunload', event => { if ((dirty || invalidMetadata) && !save()) { event.preventDefault(); event.returnValue = ''; } }, options);
-  void fetch('/editor/posts.json').then(response => response.ok ? response.json() : []).then(value => { published = value; }).catch(() => {});
+  void fetch('/source/index.json').then(response => response.ok ? response.json() : []).then(value => { published = value; }).catch(() => {});
   await editor.setSource(current.source.slice(frontmatter.length), parseFrontmatter(current.source).metadata);
   dirty = true; save();
   if (!canPublish) setStatus('sign in again to publish');
@@ -253,5 +253,28 @@ export async function startInlineEditor(slug: string, create: boolean, renderCon
     canLeave,
     menu,
     destroy() { save(); clearTimeout(publishTimer); abort.abort(); editor.destroy(); tools.remove(); article.innerHTML = original; renderControls(); },
+  };
+}
+
+// Visitors can edit too, but nothing is stored or published: a reload brings back the real page.
+export async function startVisitorEditor(slug: string) {
+  const response = await fetch(`/source/${encodeURIComponent(slug)}.md`);
+  if (!response.ok) throw new Error('Could not open this page');
+  const text = await response.text();
+  if (text.length > limit) throw new Error('This page is too large to edit');
+  const frontmatter = text.match(/^---[ \t]*\r?\n[\s\S]*?\r?\n---[ \t]*(?:\r?\n|$)(?:\r?\n)*/)?.[0] || '';
+  const article = document.querySelector<HTMLElement>('[data-reader-content]')!;
+  const original = article.innerHTML;
+  const error = document.createElement('p');
+  error.id = 'editor-error'; error.setAttribute('role', 'alert'); error.hidden = true;
+  const tools = document.createElement('div'); tools.id = 'editor-tools'; tools.append(error);
+  document.body.append(tools);
+  const notice = (message = '') => { error.textContent = message; error.hidden = !message; };
+  const noop = () => {};
+  const editor = createArticleEditor(article, noop, notice, noop, noop, limit - frontmatter.length);
+  await editor.setSource(text.slice(frontmatter.length), parseFrontmatter(text).metadata);
+  return {
+    editIndex: (index: number) => editor.editIndex(index),
+    destroy() { editor.destroy(); tools.remove(); article.innerHTML = original; },
   };
 }

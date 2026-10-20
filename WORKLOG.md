@@ -1,5 +1,11 @@
 # Worklog
 
+## 2026-10-20 — Editing for every visitor
+
+- Request: anyone can edit any page; only the owner's GitHub-signed-in edits persist, others vanish on refresh.
+- Visitors load the editor on their first click into the article and edit in memory only (no storage, no publishing). Raw source moved from owner-only `/editor/posts/` to public `/source/`.
+- Verified: build, typecheck, lint, site suites, and eight browser scenarios including a visitor edit that reload discards.
+
 ## 2026-10-19 — Always-on editing that publishes
 
 - Request: no switching between edit and read; when signed in through `/signin/`, edits should persist to the live site.

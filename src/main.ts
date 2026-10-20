@@ -25,7 +25,8 @@ function initCopyButtons() {
   });
 }
 
-// Signed-in owners get a page that is always editable; there is no separate edit mode.
+// Every page is editable in place. Only the signed-in owner's edits are saved and published;
+// a visitor's edits live in memory and vanish on reload.
 function initOwnerControls() {
   const slug = document.body.dataset.pageSlug;
   if (!slug) return;
@@ -34,6 +35,8 @@ function initOwnerControls() {
   let failed = false;
   let version = 0;
   let editor: Awaited<ReturnType<typeof import('./editor/inline').startInlineEditor>> | undefined;
+  let visitor: Awaited<ReturnType<typeof import('./editor/inline').startVisitorEditor>> | undefined;
+  let visitorLoading: Promise<unknown> | undefined;
   const query = new URLSearchParams(location.search);
   let requested = { create: query.get('create') === '1', draft: query.get('draft') || undefined };
   const render = () => {
@@ -67,6 +70,7 @@ function initOwnerControls() {
       const { startInlineEditor } = await import('./editor/inline');
       if (!owner || request !== version) return;
       editor?.destroy(); editor = undefined;
+      visitor?.destroy(); visitor = undefined;
       const next = await startInlineEditor(slug, create, render, draftId);
       if (!owner || request !== version) { next.destroy(); return; }
       editor = next;
@@ -84,9 +88,25 @@ function initOwnerControls() {
     failed = false;
     await open(true);
   });
+  // Visitors load the editor on their first click, so reading stays as light as before.
+  const article = document.querySelector<HTMLElement>('[data-reader-content]');
+  article?.addEventListener('click', event => {
+    if (owner || editor || visitor || !(event.target instanceof Element)) return;
+    if (event.target.closest('a[href], button, video, summary') || getSelection()?.toString()) return;
+    const block = event.target.closest('[data-reader-content] > *');
+    if (!block || block.matches('.article-byline, .article-navigation')) return;
+    const index = [...article.children].indexOf(block);
+    const request = version;
+    visitorLoading ??= import('./editor/inline').then(({ startVisitorEditor }) => startVisitorEditor(slug)).then(next => {
+      if (owner || request !== version) { next.destroy(); return; }
+      visitor = next;
+      return next.editIndex(index);
+    }).catch(() => {}).finally(() => { visitorLoading = undefined; });
+  });
   watchOwnerSession((session) => {
     owner = session?.authenticated === true;
-    if (!owner) { ++version; const current = editor; editor = undefined; current?.destroy(); }
+    if (!owner && editor) { ++version; const current = editor; editor = undefined; current.destroy(); }
+    if (owner && visitor) { ++version; const current = visitor; visitor = undefined; current.destroy(); }
     render();
     if (owner && !editor && !opening && !failed) {
       const { create, draft } = requested;

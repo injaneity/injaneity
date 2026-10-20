@@ -80,10 +80,12 @@ async function main() {
 <main class="article-frame"><article class="reader-content" data-reader-content><h1>page not found</h1><p>this page does not exist. <a href="/">back to the blog</a>.</p></article></main>
 <nav class="reader-footer" aria-label="Primary"><a href="/">about me</a><span aria-hidden="true">·</span><a href="/writing/">writing</a><span aria-hidden="true">·</span><a href="/01-experience/">experience</a></nav>
 </div></div>${ditherFilter()}</body></html>`);
+  // Raw page source is public (the repository is too), so anyone can edit a page in place.
+  const sourceDir = path.join(distDir, 'source');
+  await fs.mkdir(sourceDir, { recursive: true });
+  await fs.writeFile(path.join(sourceDir, 'index.json'), JSON.stringify(documents.map(({ slug, title }) => ({ slug, title }))));
+  for (const document of documents) await fs.writeFile(path.join(sourceDir, `${document.slug}.md`), document.raw);
   const editorDir = path.join(distDir, 'editor');
-  await fs.mkdir(path.join(editorDir, 'posts'), { recursive: true });
-  await fs.writeFile(path.join(editorDir, 'posts.json'), JSON.stringify(documents.map(({ slug, title }) => ({ slug, title }))));
-  for (const document of documents) await fs.writeFile(path.join(editorDir, 'posts', `${document.slug}.md`), document.raw);
   const editorHtml = await fs.readFile(path.join(editorDir, 'index.html'), 'utf8');
   await fs.writeFile(path.join(editorDir, 'index.html'), editorHtml.replace('<!-- ink-filter -->', ditherFilter()));
 

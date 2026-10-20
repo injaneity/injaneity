@@ -63,10 +63,10 @@ test('legacy editor is noindex and the inline editor stays off the reader load p
   assert.ok(editorSize < 180_000, `inline editor and shared renderer grew to ${editorSize} bytes gzip`);
 });
 
-test('editor copies retain source frontmatter instead of importing a rendered mirror', async () => {
-  const entries = JSON.parse(await readFile('dist/editor/posts.json', 'utf8'));
+test('public source copies retain frontmatter instead of importing a rendered mirror', async () => {
+  const entries = JSON.parse(await readFile('dist/source/index.json', 'utf8'));
   for (const entry of entries) {
-    assert.equal(await readFile(`dist/editor/posts/${entry.slug}.md`, 'utf8'), await readFile(`src/content/${entry.slug}.md`, 'utf8'));
+    assert.equal(await readFile(`dist/source/${entry.slug}.md`, 'utf8'), await readFile(`src/content/${entry.slug}.md`, 'utf8'));
   }
 });
 
