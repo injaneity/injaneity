@@ -15,7 +15,7 @@ html {
 }
 
 body {
-  color: var(--text);
+  color: var(--foreground);
   background: transparent;
 }
 
@@ -212,12 +212,12 @@ button {
 /* Text selection uses a quiet graphite wash. */
 ::selection {
   background-color: var(--selected-bg);
-  color: var(--text);
+  color: var(--foreground);
 }
 
 ::-moz-selection {
   background-color: var(--selected-bg);
-  color: var(--text);
+  color: var(--foreground);
 }
 
 /* Search results scrollbar - thin ink line on paper, no track */
@@ -265,7 +265,7 @@ button {
 .reader-content {
   font-family: 'Newsreader', Georgia, 'Times New Roman', serif;
   font-optical-sizing: auto;
-  color: var(--text);
+  color: var(--foreground);
   line-height: 1.48;
 }
 
@@ -326,12 +326,12 @@ button {
   z-index: 100;
   padding: 0.5rem;
   background: var(--background);
-  color: var(--text);
+  color: var(--foreground);
   transform: translateY(-200%);
 }
 
 .skip-link:focus { transform: none; }
-a:focus-visible, button:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--foreground); outline-offset: 3px; }
 
 @media (prefers-reduced-motion: reduce) {
   .reader-content a { transition: none; }
@@ -387,7 +387,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--text); outline-
   line-height: 1.48;
   margin-top: 0;
   margin-bottom: 0.55em;
-  color: var(--text);
+  color: var(--foreground);
   min-height: 1em;
   text-align: justify;
   hyphens: auto;
@@ -473,7 +473,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--text); outline-
 .reader-content code::selection,
 .reader-content code *::selection {
   background-color: var(--selected-bg);
-  color: var(--text);
+  color: var(--foreground);
 }
 
 .reader-content pre {
@@ -536,7 +536,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--text); outline-
 }
 
 .reader-content .copy-button:hover {
-  color: var(--text);
+  color: var(--foreground);
   background: var(--tool-pending-bg);
 }
 
@@ -551,7 +551,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--text); outline-
   display: block;
   overflow-x: auto;
   padding: 0;
-  color: var(--text);
+  color: var(--foreground);
   background: transparent !important;
   border-radius: 0;
   font-family: var(--code-font);
@@ -597,7 +597,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--text); outline-
 
 /* subst */
 .reader-content .hljs-subst {
-  color: var(--text);
+  color: var(--foreground);
 }
 
 /* comment doctag */
@@ -724,7 +724,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--text); outline-
 
 .reader-content th,
 .reader-content td {
-  border: 1px solid var(--text);
+  border: 1px solid var(--foreground);
   padding: 0.5rem 0.75rem;
   text-align: left;
 }
@@ -752,7 +752,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--text); outline-
   appearance: none;
   width: 18px;
   height: 18px;
-  border: 2px solid var(--text);
+  border: 2px solid var(--foreground);
   border-radius: 0;
   pointer-events: none;
   position: relative;
@@ -864,7 +864,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--text); outline-
   border-bottom: 2px solid var(--border-muted);
   outline: 0;
   background: transparent;
-  color: var(--text);
+  color: var(--foreground);
   font-size: 0.875rem;
   transition: border-color 0.3s ease;
 }
@@ -884,7 +884,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--text); outline-
 }
 
 .clear-button:hover {
-  color: var(--text);
+  color: var(--foreground);
 }
 
 .search-input:placeholder-shown + .clear-button {
@@ -954,7 +954,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--text); outline-
 }
 
 .search-title {
-  color: var(--text);
+  color: var(--foreground);
   font-size: 0.875rem;
   font-weight: 600;
   transition: color 0.2s ease;
@@ -993,7 +993,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--text); outline-
 }
 
 .corner-button[data-mode='top']:hover {
-  color: var(--text);
+  color: var(--foreground);
 }
 
 .corner-button[data-mode='source'] .corner-label {
