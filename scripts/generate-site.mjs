@@ -88,6 +88,8 @@ async function main() {
   const editorDir = path.join(distDir, 'editor');
   const editorHtml = await fs.readFile(path.join(editorDir, 'index.html'), 'utf8');
   await fs.writeFile(path.join(editorDir, 'index.html'), editorHtml.replace('<!-- ink-filter -->', ditherFilter()));
+  const signinFile = path.join(distDir, 'signin', 'index.html');
+  await fs.writeFile(signinFile, (await fs.readFile(signinFile, 'utf8')).replace('<!-- ink-filter -->', ditherFilter()));
 
   await fs.rm(path.join(distDir, 'index.html'), { force: true });
   for (const document of documents) {
