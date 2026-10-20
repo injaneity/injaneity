@@ -1,16 +1,6 @@
-/* Novmbr palette: warm dark paper with parchment ink */
+@import './theme.css';
+
 :root {
-  color-scheme: dark;
-  --paper: #241d1a;
-  --ink: #c7b8ac;
-  --muted: #8f8177;
-  --muted-soft: #6f6259;
-  --rule: #3d332e;
-  --accent: #cca75f;
-  --accent-soft: #5d4e47;
-  --accent-hover: #e0c88f;
-  --link-accent: #2f7d7c;
-  --link-accent-hover: #52877f;
   --code-font: 'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 }
 
@@ -245,19 +235,19 @@ button {
 
 /* Text selection uses a quiet graphite wash. */
 ::selection {
-  background-color: var(--accent-soft);
+  background-color: var(--selection);
   color: var(--ink);
 }
 
 ::-moz-selection {
-  background-color: var(--accent-soft);
+  background-color: var(--selection);
   color: var(--ink);
 }
 
 /* Search results scrollbar - thin ink line on paper, no track */
 .search-results {
   scrollbar-width: thin;
-  scrollbar-color: var(--accent-soft) transparent;
+  scrollbar-color: var(--selection) transparent;
 }
 
 .search-results::-webkit-scrollbar {
@@ -269,7 +259,7 @@ button {
 }
 
 .search-results::-webkit-scrollbar-thumb {
-  background-color: var(--accent-soft);
+  background-color: var(--selection);
   border-radius: 0;
 }
 
@@ -445,7 +435,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   padding: 0.14em 0.16em;
   margin: 0 -0.16em;
   background-color: transparent;
-  background-image: linear-gradient(rgba(82, 135, 127, 0.34), rgba(82, 135, 127, 0.34));
+  background-image: linear-gradient(var(--link-wash), var(--link-wash));
   background-repeat: no-repeat;
   background-size: 100% 0%;
   background-position: 0 100%;
@@ -504,7 +494,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 
 .reader-content code::selection,
 .reader-content code *::selection {
-  background-color: var(--accent-soft);
+  background-color: var(--selection);
   color: var(--ink);
 }
 
@@ -569,7 +559,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 
 .reader-content .copy-button:hover {
   color: var(--ink);
-  background: rgba(199, 184, 172, 0.08);
+  background: var(--panel);
 }
 
 /* Syntax Highlighting Styles - Novmbr */
@@ -598,7 +588,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .reader-content .hljs-selector-tag,
 .reader-content .hljs-literal,
 .reader-content .hljs-section {
-  color: #c27a40;
+  color: var(--code-keyword);
   font-weight: 600;
 }
 
@@ -607,19 +597,19 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .reader-content .hljs-template-variable,
 .reader-content .hljs-addition,
 .reader-content .hljs-meta-string {
-  color: #9dac5f;
+  color: var(--code-string);
 }
 
 /* Numbers - rose */
 .reader-content .hljs-number {
-  color: #b5896e;
+  color: var(--code-number);
 }
 
 /* Functions - gold */
 .reader-content .hljs-function,
 .reader-content .hljs-title.function_,
 .reader-content .hljs-title {
-  color: #cca75f;
+  color: var(--code-function);
   font-weight: 500;
 }
 
@@ -628,7 +618,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .reader-content .hljs-built_in,
 .reader-content .hljs-selector-class,
 .reader-content .hljs-doctag {
-  color: #52877f;
+  color: var(--code-type);
 }
 
 /* Variables and attributes - rose */
@@ -637,14 +627,14 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .reader-content .hljs-params,
 .reader-content .hljs-property,
 .reader-content .hljs-attribute {
-  color: #b5896e;
+  color: var(--code-number);
 }
 
 /* Class names - teal */
 .reader-content .hljs-title.class_,
 .reader-content .hljs-class,
 .reader-content .hljs-title.class {
-  color: #52877f;
+  color: var(--code-type);
 }
 
 /* Operators and punctuation - default foreground */
@@ -657,7 +647,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
 .reader-content .hljs-tag,
 .reader-content .hljs-name,
 .reader-content .hljs-selector-id {
-  color: #c27a40;
+  color: var(--code-keyword);
 }
 
 /* Meta and annotations - muted */
@@ -675,16 +665,16 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   font-weight: 700;
 }
 
-/* Regular expressions - rust */
+/* Regular expressions - green, like strings */
 .reader-content .hljs-regexp {
-  color: #9f6434;
+  color: var(--code-string);
 }
 
 /* Symbols - teal */
 .reader-content .hljs-symbol,
 .reader-content .hljs-bullet,
 .reader-content .hljs-link {
-  color: #c27a40;
+  color: var(--code-symbol);
 }
 
 .reader-content blockquote {
@@ -1050,8 +1040,8 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   padding: 0.75rem 0.9rem;
   transform: translateX(-50%);
   overflow: visible;
-  background: rgba(36, 29, 26, 0.97);
-  border: 1px solid rgba(199, 184, 172, 0.2);
+  background: var(--panel);
+  border: 1px solid var(--rule);
 }
 
 .search-control.is-open .search-input-wrap,
@@ -1076,8 +1066,8 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--ink); outline-o
   margin: 0;
   padding: 0.25rem 0.9rem 0.5rem;
   transform: translateX(-50%);
-  background: rgba(36, 29, 26, 0.97);
-  border: 1px solid rgba(199, 184, 172, 0.2);
+  background: var(--panel);
+  border: 1px solid var(--rule);
   border-top: 0;
 }
 
