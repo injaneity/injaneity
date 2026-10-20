@@ -130,6 +130,9 @@ function initReaderAlignment() {
     const availableHeight = frame ? frame.clientHeight - verticalPadding : innerHeight;
     const centered = reader.scrollHeight <= availableHeight + 1;
     reader.classList.toggle('is-vertically-centered', centered);
+    // Lift by 6% of the frame, but never past the free space above the content.
+    const slack = Math.max(0, (availableHeight - reader.scrollHeight) / 2);
+    reader.style.setProperty('--optical-lift', `${Math.round(Math.min(availableHeight * 0.06, slack))}px`);
   };
 
   addEventListener('resize', update, { passive: true });

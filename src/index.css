@@ -167,8 +167,9 @@ button {
     overflow: visible;
   }
 
+  /* Exact centring reads as low, so short pages sit at the optical centre, a little above the middle. */
   .reader-content.is-vertically-centered {
-    transform: translateY(-0.75rem);
+    transform: translateY(calc(-1 * var(--optical-lift, 0.75rem)));
   }
 
   .reader-header,
