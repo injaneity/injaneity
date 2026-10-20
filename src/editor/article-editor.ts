@@ -50,7 +50,7 @@ export function createArticleEditor(article: HTMLElement, changed: () => void, n
       rendered();
     } catch { notify('could not render this draft · your markdown is still saved'); }
   }
-  async function activate(from: number, to: number) {
+  async function activate(from: number, to: number, point?: { x: number; y: number }) {
     if (!enabled) return;
     if (active) {
       const delta = active.editor.source.length - (active.to - active.from);
@@ -80,7 +80,9 @@ export function createArticleEditor(article: HTMLElement, changed: () => void, n
     active = { from, to, editor };
     editor.setSource(initial + original);
     editor.view.focus();
-    editor.view.dispatch({ selection: { anchor: editor.view.state.doc.length } });
+    // Put the caret where the reader clicked; the editor lays text out like the rendered block.
+    const caret = point ? editor.view.posAtCoords(point) : null;
+    editor.view.dispatch({ selection: { anchor: caret ?? editor.view.state.doc.length } });
     editor.view.dom.addEventListener('keydown', event => {
       if (event.key === 'Escape') { event.preventDefault(); void finish(); }
     });
@@ -101,7 +103,7 @@ export function createArticleEditor(article: HTMLElement, changed: () => void, n
     const block = event.target.closest<HTMLElement>('[data-edit-from]');
     if (!block) return;
     event.preventDefault();
-    void activate(Number(block.dataset.editFrom), Number(block.dataset.editTo));
+    void activate(Number(block.dataset.editFrom), Number(block.dataset.editTo), { x: event.clientX, y: event.clientY });
   };
   const keyboard = (event: KeyboardEvent) => {
     if (!enabled || active || !(event.target instanceof HTMLElement)) return;
@@ -128,9 +130,9 @@ export function createArticleEditor(article: HTMLElement, changed: () => void, n
     },
     finish,
     focus() { (active?.editor.view.contentDOM || article.querySelector<HTMLElement>('[data-edit-from], .append-paragraph'))?.focus(); },
-    async editIndex(index: number) {
+    async editIndex(index: number, point?: { x: number; y: number }) {
       const block = article.children[index] as HTMLElement | undefined;
-      if (block?.dataset.editFrom) await activate(Number(block.dataset.editFrom), Number(block.dataset.editTo));
+      if (block?.dataset.editFrom) await activate(Number(block.dataset.editFrom), Number(block.dataset.editTo), point);
     },
     async setMetadata(details: Metadata) { metadata = details; if (!active) await paint(); },
     destroy() { ++generation; enabled = false; commit(); article.classList.remove('is-editing'); article.removeEventListener('click', click); article.removeEventListener('keydown', keyboard); },

@@ -96,11 +96,12 @@ function initOwnerControls() {
     const block = event.target.closest('[data-reader-content] > *');
     if (!block || block.matches('.article-byline, .article-navigation')) return;
     const index = [...article.children].indexOf(block);
+    const point = { x: event.clientX, y: event.clientY };
     const request = version;
     visitorLoading ??= import('./editor/inline').then(({ startVisitorEditor }) => startVisitorEditor(slug)).then(next => {
       if (owner || request !== version) { next.destroy(); return; }
       visitor = next;
-      return next.editIndex(index);
+      return next.editIndex(index, point);
     }).catch(() => {}).finally(() => { visitorLoading = undefined; });
   });
   watchOwnerSession((session) => {
