@@ -1,5 +1,10 @@
 # Worklog
 
+## 2026-10-20 — Smooth editing while publishing; Backspace joins paragraphs
+
+- Each edit re-rendered the whole article with innerHTML, which reloaded images and video and re-rasterised the dithered text, so block hops grew to ~330ms with ~100ms long tasks. The editor now reconciles the article block by block and only swaps blocks whose HTML changed; long tasks are gone. Copy buttons are no longer redrawn on every render.
+- Backspace at the very start of a paragraph joins it onto the end of the block above (with a space), keeping the caret at the join. Fenced code, tables, raw HTML, and headings/lists/quotes being joined keep their structure.
+
 ## 2026-10-20 — Reveal markdown per span, not per line
 
 - Clicking into a sentence showed raw markdown for the whole line. Inline syntax (bold, italics, strikethrough, code spans, links, bullets, task boxes) now shows only for the span the caret touches; headings, quotes and code fences stay line-level.

@@ -14,9 +14,9 @@ function icon(name: Icon) {
 
 function initCopyButtons() {
   document.querySelectorAll<HTMLButtonElement>('[data-copy-code]').forEach((button) => {
-    button.innerHTML = icon('copy');
     if (button.dataset.copyReady) return;
     button.dataset.copyReady = 'true';
+    button.innerHTML = icon('copy');
     button.addEventListener('click', async () => {
       await navigator.clipboard.writeText(button.closest('.code-block-wrapper')?.querySelector('code')?.textContent ?? '');
       button.innerHTML = icon('check');
