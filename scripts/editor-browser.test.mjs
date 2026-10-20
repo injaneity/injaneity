@@ -128,6 +128,22 @@ test('clicking a word keeps the rest of the sentence formatted and puts the care
   assert.equal(await stored(page), source);
 });
 
+test('backspace at the start of a paragraph joins it to the one above', async t => {
+  const source = '# Join\n\nFirst sentence.\n\nSecond sentence.\n\nThird.';
+  const { page, input } = await setup(t, { source });
+  const box = await page.locator('.reader-content > p').nth(1).getByText('Second').boundingBox();
+  await page.mouse.click(box.x + 2, box.y + box.height / 2);
+  await expect(input).toBeVisible();
+  await page.keyboard.press('Home');
+  await page.keyboard.press('Backspace');
+  await expect(page.locator('.cm-content')).toHaveText('First sentence. Second sentence.');
+  // The caret sits at the join, so typing continues there.
+  await page.keyboard.type('And ');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.reader-content > p')).toHaveText(['First sentence. And Second sentence.', 'Third.']);
+  await expect.poll(() => stored(page)).toBe('# Join\n\nFirst sentence. And Second sentence.\n\nThird.');
+});
+
 test('links still navigate on an editable page', async t => {
   const { page } = await setup(t, { source: '# Links\n\nRead [the writing index](/writing/).' });
   await page.getByRole('link', { name: 'the writing index' }).click();
