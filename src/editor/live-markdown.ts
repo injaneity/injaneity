@@ -19,8 +19,12 @@ function decorate(view: EditorView): DecorationSet {
   const { state } = view;
   const ranges: Range<Decoration>[] = [];
   const lines = new Map<number, Set<string>>();
+  // Line-level syntax (headings, quotes, code fences) shows on the cursor's line; inline syntax
+  // (bold, links, code spans) shows only for the span the cursor touches, so the rest stays rendered.
   const active = (from: number, to: number) => view.hasFocus && state.selection.ranges.some(selection =>
     state.doc.lineAt(selection.from).from <= to && state.doc.lineAt(selection.to).to >= from);
+  const touched = (from: number, to: number) => view.hasFocus && state.selection.ranges.some(selection =>
+    selection.from <= to && selection.to >= from);
   const mark = (from: number, to: number, className: string) => {
     if (to > from) ranges.push(Decoration.mark({ class: className }).range(from, to));
   };
@@ -69,7 +73,7 @@ function decorate(view: EditorView): DecorationSet {
         for (let child = node.firstChild; child; child = child.nextSibling) children.push(child);
         const opening = children.find(child => child.name === 'LinkMark');
         const closing = children.find(child => child.name === 'LinkMark' && state.sliceDoc(child.from, child.to) === ']');
-        if (opening && closing && !active(from, to) && state.doc.lineAt(from).number === state.doc.lineAt(to).number) {
+        if (opening && closing && !touched(from, to) && state.doc.lineAt(from).number === state.doc.lineAt(to).number) {
           hide(from, opening.to);
           hide(closing.from, to);
           mark(opening.to, closing.from, name === 'Image' ? 'live-image-label' : 'live-link');
@@ -77,13 +81,14 @@ function decorate(view: EditorView): DecorationSet {
       }
       if (name === 'HeaderMark' || name === 'EmphasisMark' || name === 'StrikethroughMark' || name === 'CodeMark' || name === 'QuoteMark') {
         const parent = node.parent!;
-        if (!active(parent.from, parent.to)) {
+        const shown = /^(HeaderMark|QuoteMark)$/.test(name) ? active(parent.from, parent.to) : touched(parent.from, parent.to);
+        if (!shown) {
           const trailingSpace = /^(HeaderMark|QuoteMark)$/.test(name) && state.sliceDoc(to, to + 1) === ' ' ? 1 : 0;
           hide(from, to + trailingSpace);
         } else mark(from, to, 'live-syntax');
       }
-      if (name === 'ListMark' && /^[*+-]$/.test(state.sliceDoc(from, to)) && !active(from, to)) ranges.push(Decoration.replace({ widget: new Bullet() }).range(from, to));
-      if (name === 'TaskMarker' && !active(from, to)) ranges.push(Decoration.replace({ widget: new Task(/x/i.test(state.sliceDoc(from, to))) }).range(from, to));
+      if (name === 'ListMark' && /^[*+-]$/.test(state.sliceDoc(from, to)) && !touched(from, to)) ranges.push(Decoration.replace({ widget: new Bullet() }).range(from, to));
+      if (name === 'TaskMarker' && !touched(from, to)) ranges.push(Decoration.replace({ widget: new Task(/x/i.test(state.sliceDoc(from, to))) }).range(from, to));
     },
   });
   for (const [from, classes] of lines) ranges.push(Decoration.line({ class: [...classes].join(' ') }).range(from));

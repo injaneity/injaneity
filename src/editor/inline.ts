@@ -274,7 +274,7 @@ export async function startVisitorEditor(slug: string) {
   const editor = createArticleEditor(article, noop, notice, noop, noop, limit - frontmatter.length);
   await editor.setSource(text.slice(frontmatter.length), parseFrontmatter(text).metadata);
   return {
-    editIndex: (index: number) => editor.editIndex(index),
+    editIndex: (index: number, point?: { x: number; y: number }) => editor.editIndex(index, point),
     destroy() { editor.destroy(); tools.remove(); article.innerHTML = original; },
   };
 }

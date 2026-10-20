@@ -1,5 +1,11 @@
 # Worklog
 
+## 2026-10-20 — Reveal markdown per span, not per line
+
+- Clicking into a sentence showed raw markdown for the whole line. Inline syntax (bold, italics, strikethrough, code spans, links, bullets, task boxes) now shows only for the span the caret touches; headings, quotes and code fences stay line-level.
+- The caret lands where you click instead of at the end of the block.
+- Verified: build, typecheck, lint, site suites, and nine browser scenarios including span-level reveal.
+
 ## 2026-10-20 — Editing for every visitor
 
 - Request: anyone can edit any page; only the owner's GitHub-signed-in edits persist, others vanish on refresh.

@@ -109,6 +109,25 @@ test('owners edit the page they read, with no mode switch, and edits publish to 
   await expect(page.locator('.reader-content')).toContainText('Live addition.');
 });
 
+test('clicking a word keeps the rest of the sentence formatted and puts the caret there', async t => {
+  const source = '# Spans\n\nPlain words, then **bold text**, then a [link](/writing/), then `code` at the end.';
+  const { page, input } = await setup(t, { source });
+  const paragraph = page.locator('.reader-content > p').first();
+  const box = await paragraph.getByText('Plain words').boundingBox();
+  await page.mouse.click(box.x + 3, box.y + box.height / 2);
+  await expect(input).toBeVisible();
+  // The caret lands in the clicked word, and no markdown syntax appears elsewhere in the sentence.
+  assert.ok(await page.evaluate(() => getSelection().anchorOffset) <= 2);
+  await expect(page.locator('.cm-content')).toHaveText('Plain words, then bold text, then a link, then code at the end.');
+  await page.keyboard.press('ArrowRight'); // still in plain text
+  await expect(page.locator('.cm-content')).not.toContainText('**');
+  // Moving into the bold span reveals only that span's markers.
+  const bold = await page.locator('.cm-content .live-strong').boundingBox();
+  await page.mouse.click(bold.x + bold.width / 2, bold.y + bold.height / 2);
+  await expect(page.locator('.cm-content')).toHaveText('Plain words, then **bold text**, then a link, then code at the end.');
+  assert.equal(await stored(page), source);
+});
+
 test('links still navigate on an editable page', async t => {
   const { page } = await setup(t, { source: '# Links\n\nRead [the writing index](/writing/).' });
   await page.getByRole('link', { name: 'the writing index' }).click();
