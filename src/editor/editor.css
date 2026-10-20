@@ -25,7 +25,7 @@
 #editor-tools button { font: inherit; color: inherit; border: 0; border-radius: 0; background: transparent; padding: 0.5rem 0; min-height: 40px; }
 #editor-tools button:hover { text-decoration: underline; text-underline-offset: 0.3em; text-decoration-color: var(--md-link); }
 #editor-error { position: fixed; bottom: 4rem; left: 50%; transform: translateX(-50%); max-width: calc(100vw - 2rem); margin: 0; padding: 0.7rem 1rem; color: var(--error); background: var(--background); font-size: 12px; z-index: 20; }
-#contents { color: var(--text); padding: 1.5rem 2rem; width: min(580px, calc(100vw - 2rem)); max-height: 85dvh; background: var(--background); border: 1px solid var(--border-muted); scrollbar-width: thin; }
+#contents { color: var(--foreground); padding: 1.5rem 2rem; width: min(580px, calc(100vw - 2rem)); max-height: 85dvh; background: var(--background); border: 1px solid var(--border-muted); scrollbar-width: thin; }
 #contents::backdrop { background: transparent; }
 .contents-header { display: flex; align-items: center; justify-content: space-between; }
 .contents-header h1 { margin: 0; font: 30px/1.25 'Newsreader', Georgia, serif; }
@@ -38,10 +38,10 @@
 #documents a:hover { text-decoration: underline; text-decoration-color: var(--md-link); }
 .page-details { margin-top: 1.5rem; font-size: 12px; color: var(--muted); }
 .page-details summary { cursor: pointer; }
-#metadata { display: block; width: 100%; min-height: 140px; margin-top: 0.7rem; padding: 0.7rem; background: var(--tool-pending-bg); color: var(--text); border: 1px solid var(--border-muted); font: 12px/1.6 var(--code-font); }
+#metadata { display: block; width: 100%; min-height: 140px; margin-top: 0.7rem; padding: 0.7rem; background: var(--tool-pending-bg); color: var(--foreground); border: 1px solid var(--border-muted); font: 12px/1.6 var(--code-font); }
 #metadata[aria-invalid="true"] { border-color: var(--error); }
 #metadata-error { color: var(--error); }
 #owner-signout { margin-top: 1rem; font-size: 12px; color: var(--muted); }
 .owner-gate #signin-message { color: var(--muted); }
 .owner-gate [hidden] { display: none !important; }
-.owner-gate #signin-retry { padding: 0; border: 0; background: none; color: var(--text); text-decoration: underline; text-decoration-color: var(--md-link); text-decoration-thickness: 2px; text-underline-offset: 2px; }
+.owner-gate #signin-retry { padding: 0; border: 0; background: none; color: var(--foreground); text-decoration: underline; text-decoration-color: var(--md-link); text-decoration-thickness: 2px; text-underline-offset: 2px; }
