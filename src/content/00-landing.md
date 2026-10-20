@@ -10,7 +10,7 @@ modified: 2026-06-13
 Software engineer at [**cua (YC25)**](cua.ai), formerly at **JPMorgan**, **SEA Group**, [**Hypotenuse AI (YC23)**](hypotenuse.ai).
 
 
-I'm currently a software engineer at **[**cua (YC25)**](cua.ai)** & an [**OpenAI Codex Ambassador**](https://developers.openai.com/community/codex-ambassadors?ambassador=zane-chee#codex-ambassadors-globe), advocating for the future of computer use. I previously interned across the software stack at **JPMorgan**, **SEA Group**, [**Hypotenuse AI (YC23)**](hypotenuse.ai), and other companies.
+
 
 I maintain [**pi-computer-use**](https://github.com/injaneity/pi-computer-use), my open source extension for [Pi Coding Agent](pi.dev).
 
